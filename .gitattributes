@@ -1,0 +1,25 @@
+# Text files: normalize to LF in the repo, check out with the platform's endings.
+* text=auto
+
+# Binary assets. Without these, core.autocrlf=true can misdetect an image whose
+# first 8000 bytes happen to contain no NUL as text and corrupt it on commit
+# (this really happened to the home_banner_*.png assets).
+*.png binary
+*.webp binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.so binary
+*.jar binary
+*.aar binary
+*.zip binary
+*.keystore binary
+*.jks binary
+*.pdf binary
+*.mp4 binary
+*.webm binary

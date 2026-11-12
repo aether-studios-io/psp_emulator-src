@@ -1,0 +1,23 @@
+# Copy to local.properties (git-ignored) and fill in per machine / per app.
+# Android SDK location — Android Studio writes this for you on first open.
+sdk.dir=C\:\Users\YOU\AppData\Local\Android\Sdk
+
+# UMP (consent) test device hash — from the logcat line the UMP SDK prints on first run.
+# Lets you exercise the EEA consent form outside the EEA.
+UMP_TEST_DEVICE_ID=
+
+# Google Mobile Ads test device hash — from the "To get test ads on this device" logcat
+# line. Registered via MobileAds.setRequestConfiguration so taps on a locally-built
+# RELEASE artifact never count as live clicks (invalid-traffic protection).
+GMA_TEST_DEVICE_ID=
+
+# Upload key for Play-uploadable release builds. All four or nothing: with any missing,
+# release falls back to debug signing (local R8 smoke tests only — Play rejects it).
+RELEASE_STORE_FILE=
+RELEASE_STORE_PASSWORD=
+RELEASE_KEY_ALIAS=
+RELEASE_KEY_PASSWORD=
+
+# Play Developer API service account, shared by every app (granted per app in Play
+# Console > Users and permissions, testing tracks). Used by :app:publishReleaseBundle.
+PLAY_CREDENTIALS_FILE=../keystore/play-service-account.json

@@ -1,0 +1,9 @@
+RetroNova 1.0 — first release
+
+• Play the handheld games you own: ISO, CSO and PBP files
+• Library with covers, search and filters
+• Save states and auto-save (3 slots per game free, unlimited with Pro)
+• Smart setup and one-tap Fix lag, fast-forward, HD rendering
+• On-screen controls, gamepad support and button remapping
+• Free homebrew guide
+• RetroNova Pro: no ads, unlimited saves — Yearly (3-day free trial), Monthly or Lifetime

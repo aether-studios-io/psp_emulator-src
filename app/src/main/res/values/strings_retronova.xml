@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- RetroNova UI copy, verbatim from docs/spec/screens.md. English only. -->
+<resources>
+    <string name="ad_label">Ad</string>
+    <string name="cd_close">Close</string>
+    <string name="cd_search">Search</string>
+    <string name="cd_add_games">Add games</string>
+    <string name="cd_more">More options</string>
+    <string name="cd_favorite">Favorite</string>
+    <string name="cd_unfavorite">Remove from favorites</string>
+    <string name="cd_resume_game">Resume %1$s</string>
+    <string name="cd_pause">Pause</string>
+
+    <!-- Bottom nav -->
+    <string name="nav_library">Library</string>
+    <string name="nav_homebrew">Homebrew</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- S01–S03 Onboarding -->
+    <string name="onb_skip">Skip</string>
+    <string name="onb1_title">Your games, back in play</string>
+    <string name="onb1_body">Play the handheld classics you own on your phone, with smooth graphics and saves that pick up right where you stopped.</string>
+    <string name="onb2_title">Import games you own</string>
+    <string name="onb2_body">Pick a folder once. RetroNova finds your ISO, CSO and PBP files, adds covers, and keeps the library tidy.</string>
+    <string name="onb3_title">Play your way</string>
+    <string name="onb3_body">Use the on-screen controls, move buttons where your thumbs rest, or connect a Bluetooth or USB gamepad.</string>
+    <string name="onb_next">Next</string>
+    <string name="onb_get_started">Get started</string>
+    <string name="onb1_chip">60 FPS</string>
+    <string name="onb1_card_eyebrow">Continue playing</string>
+    <string name="onb1_card_meta">Auto-saved just now</string>
+    <string name="onb2_added">4 games added</string>
+    <string name="onb3_pill">Gamepad ready</string>
+
+    <!-- S04 Paywall -->
+    <string name="paywall_title">Unlock RetroNova Pro</string>
+    <string name="paywall_benefit_no_ads">No ads, ever</string>
+    <string name="paywall_benefit_slots">Unlimited save slots for every game</string>
+    <string name="paywall_benefit_layouts">Unlimited controller layouts</string>
+    <string name="paywall_benefit_shaders">Pro shaders and HD upscaling</string>
+    <string name="paywall_benefit_drive">Back up saves to Google Drive</string>
+    <string name="plan_yearly">Yearly</string>
+    <string name="plan_monthly">Monthly</string>
+    <string name="plan_lifetime">Lifetime</string>
+    <string name="plan_yearly_note_trial">3-day free trial, then %1$s/year</string>
+    <string name="plan_yearly_note">Billed once a year</string>
+    <string name="plan_monthly_note">Cancel anytime</string>
+    <string name="plan_lifetime_note">Pay once, keep Pro forever</string>
+    <string name="plan_per_year">per year</string>
+    <string name="plan_per_month">per month</string>
+    <string name="plan_one_time">one time</string>
+    <string name="plan_best_value">Best value</string>
+    <string name="paywall_cta_trial">Start free trial</string>
+    <string name="paywall_cta_yearly">Subscribe yearly</string>
+    <string name="paywall_cta_monthly">Subscribe monthly</string>
+    <string name="paywall_cta_lifetime">Buy Lifetime</string>
+    <string name="paywall_lifetime_cancel_note">Buying Lifetime doesn\'t cancel your subscription. Cancel it in Google Play so it stops renewing.</string>
+    <string name="paywall_subscription_terms">Payment is charged to your Google Play account. Subscriptions renew automatically unless cancelled at least 24 hours before the end of the period. Manage them in Google Play.</string>
+    <string name="paywall_terms">Terms</string>
+    <string name="paywall_privacy">Privacy</string>
+    <string name="paywall_cancel_anytime">Cancel anytime</string>
+    <string name="paywall_plans_error">Plans can\'t load right now. Check your connection and try again.</string>
+    <string name="paywall_purchase_pending">Your purchase is pending. Pro unlocks as soon as Google Play confirms it.</string>
+    <string name="paywall_purchase_error">The purchase didn\'t go through. Please try again.</string>
+    <string name="paywall_pro_badge">PRO</string>
+
+    <!-- S05 Library -->
+    <string name="library_title">Library</string>
+    <string name="library_continue">Continue playing</string>
+    <string name="library_continue_meta">Auto-saved %1$s · %2$s played</string>
+    <string name="library_continue_meta_new">Last played %1$s</string>
+    <string name="filter_all">All</string>
+    <string name="filter_recent">Recent</string>
+    <string name="filter_favorites">Favorites</string>
+    <string name="filter_homebrew">Homebrew</string>
+    <string name="library_section_all">All games · %1$d</string>
+    <string name="library_section_recent">Recent · %1$d</string>
+    <string name="library_section_favorites">Favorites · %1$d</string>
+    <string name="library_section_homebrew">Homebrew · %1$d</string>
+    <string name="library_add_games">Add games</string>
+    <string name="library_never_played">Never played</string>
+    <string name="library_played">%1$s played</string>
+    <string name="library_homebrew_meta">Homebrew · %1$s</string>
+    <string name="library_empty_title">No games yet</string>
+    <string name="library_empty_body">Add games you own from a folder on this phone.</string>
+    <string name="library_empty_homebrew">Get free homebrew</string>
+    <string name="library_search_hint">Search your games</string>
+    <string name="library_no_results">No games match \'%1$s\'</string>
+    <string name="library_filter_empty">Nothing here yet.</string>
+
+    <!-- S06 Import -->
+    <string name="import_title">Add games</string>
+    <string name="import_folder_label">Games folder</string>
+    <string name="import_change">Change</string>
+    <string name="import_choose_folder">Choose folder</string>
+    <string name="import_add_file">Add one file</string>
+    <string name="import_scanning">Scanning… %1$d files checked</string>
+    <string name="import_added">%1$d games added</string>
+    <string name="import_added_one">1 game added</string>
+    <string name="import_scanned">Scanned %1$d files · %2$d file skipped</string>
+    <string name="import_scanned_many">Scanned %1$d files · %2$d files skipped</string>
+    <string name="import_file_meta">%1$s · %2$s</string>
+    <string name="import_not_game">%1$s · not a game file</string>
+    <string name="import_unreadable">%1$s · can\'t be read</string>
+    <string name="import_note">Only games you own. Make your own backups from your discs, or get free homebrew in the Homebrew tab.</string>
+    <string name="import_done">Done</string>
+    <string name="import_first_hint">Pick the folder where you keep your game files. RetroNova only reads the folder you choose.</string>
+    <string name="import_fail_permission">RetroNova can\'t read that folder any more. Choose it again to continue.</string>
+    <string name="import_fail_io">Something went wrong while scanning. Try again.</string>
+    <string name="import_file_added">Added %1$s</string>
+    <string name="import_file_failed">That file isn\'t a game RetroNova can open.</string>
+
+    <!-- S07 Game detail -->
+    <string name="game_resume">Resume</string>
+    <string name="game_play">Play</string>
+    <string name="game_meta_last_today">Last played today</string>
+    <string name="game_meta_last">Last played %1$s</string>
+    <string name="game_meta_never">Never played</string>
+    <string name="game_compat_great_title">Runs great on this phone.</string>
+    <string name="game_compat_tweaks_title">Runs with tweaks.</string>
+    <string name="game_compat_poor_title">May not run well.</string>
+    <string name="game_compat_body">Smart setup picked %1$s, %2$s resolution, %3$s FPS.</string>
+    <string name="game_compat_unknown">Smart setup tunes graphics the first time you play.</string>
+    <string name="game_slots_header">Save slots</string>
+    <string name="game_slots_used">%1$d of %2$d used</string>
+    <string name="game_slots_used_unlimited">%1$d used</string>
+    <string name="game_slot_auto">Auto-save</string>
+    <string name="game_slot_name">Slot %1$d</string>
+    <string name="game_slot_empty">No saves yet. Save from the pause menu while you play.</string>
+    <string name="game_rewarded_title">Watch an ad for 1 extra slot</string>
+    <string name="game_rewarded_sub">Or go Pro for unlimited slots</string>
+    <string name="game_rewarded_granted">Extra slot unlocked for 24 hours</string>
+    <string name="game_rewarded_unavailable">No ad available right now. Try again in a moment.</string>
+    <string name="game_row_graphics">Graphics</string>
+    <string name="game_row_controls">Controls layout</string>
+    <string name="game_row_cheats">Cheats</string>
+    <string name="game_graphics_auto">Auto</string>
+    <string name="game_graphics_custom">Custom</string>
+    <string name="game_controls_default">Default</string>
+    <string name="game_cheats_on">%1$d on</string>
+    <string name="game_menu_rename">Rename</string>
+    <string name="game_menu_remove">Remove from library</string>
+    <string name="game_menu_location">Show file location</string>
+    <string name="game_rename_title">Rename game</string>
+    <string name="game_rename_hint">Game title</string>
+    <string name="game_remove_title">Remove from library?</string>
+    <string name="game_remove_body">The game file and its saves stay on your phone. You can add it again any time.</string>
+    <string name="game_remove_confirm">Remove</string>
+    <string name="game_location_title">File location</string>
+    <string name="game_not_found">This game is no longer in your library.</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_save">Save</string>
+    <string name="action_ok">OK</string>
+    <string name="action_close">Close</string>
+    <string name="coming_soon">Coming in a future update</string>
+
+    <!-- S08 Homebrew -->
+    <string name="homebrew_title">Homebrew</string>
+    <string name="homebrew_eyebrow">Free &amp; legal</string>
+    <string name="homebrew_hero_title">Games made by fans, free to share</string>
+    <string name="homebrew_hero_body">Each one opens on its author\'s page with its license.</string>
+    <string name="homebrew_backup_title">Back up games you own</string>
+    <string name="homebrew_backup_sub">Step-by-step guide for your own discs</string>
+    <string name="homebrew_add_title">Add a downloaded homebrew</string>
+    <string name="homebrew_add_sub">Pick the file from your Downloads folder</string>
+    <string name="homebrew_featured">Featured homebrew</string>
+    <string name="homebrew_caption">Titles listed here are free and carry an open license.</string>
+    <string name="homebrew_soon">The curated homebrew list arrives in a future update.</string>
+    <string name="guide_title">Back up games you own</string>
+    <string name="guide_intro">RetroNova plays copies of games you already own. Here is how to make your own backup files. RetroNova never downloads games for you.</string>
+    <string name="guide_step1_title">1. Use your own console and discs</string>
+    <string name="guide_step1_body">Only back up discs you bought. Sharing or downloading copies of games you don\'t own is illegal in most countries.</string>
+    <string name="guide_step2_title">2. Create an image file</string>
+    <string name="guide_step2_body">Use your console\'s homebrew tools to dump the disc to an ISO file. CSO is a compressed ISO and works too.</string>
+    <string name="guide_step3_title">3. Copy it to your phone</string>
+    <string name="guide_step3_body">Connect your phone to a computer and copy the ISO, CSO or PBP files into one folder, for example Games.</string>
+    <string name="guide_step4_title">4. Pick the folder in RetroNova</string>
+    <string name="guide_step4_body">Open Library › Add games › Choose folder. RetroNova finds the games and adds covers automatically.</string>
+
+    <!-- S09 Player / S10 Pause -->
+    <string name="player_error_title">This game can\'t start</string>
+    <string name="player_error_body">This game can\'t start. The file may be damaged or in an unsupported format.</string>
+    <string name="player_back_to_library">Back to library</string>
+    <string name="player_loading">Starting…</string>
+    <string name="pause_eyebrow">Paused</string>
+    <string name="pause_autosaved">Auto-saved %1$s · Slot A</string>
+    <string name="pause_not_saved">Not saved yet</string>
+    <string name="pause_resume">Resume</string>
+    <string name="pause_save">Save state</string>
+    <string name="pause_load">Load state</string>
+    <string name="pause_cheats">Cheats</string>
+    <string name="pause_controls">Controls</string>
+    <string name="pause_speed_1">Speed 1×</string>
+    <string name="pause_speed_2">Speed 2×</string>
+    <string name="pause_graphics">Graphics</string>
+    <string name="pause_screenshot">Screenshot</string>
+    <string name="pause_exit">Exit game</string>
+    <string name="pause_exit_caption">Exit auto-saves your progress.</string>
+    <string name="toast_saved">Saved</string>
+    <string name="toast_loaded">Loaded</string>
+    <string name="toast_screenshot">Screenshot saved to Pictures/RetroNova</string>
+    <string name="toast_save_failed">Couldn\'t save. Free some space and try again.</string>
+    <string name="toast_load_failed">That save can\'t be loaded.</string>
+    <string name="toast_slots_full">All free slots are used. Watch an ad on the game page or go Pro.</string>
+    <string name="load_pick_title">Load state</string>
+    <string name="save_pick_title">Save to slot</string>
+    <string name="slot_empty">Empty</string>
+
+    <!-- S13 / S14 Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_your_plan">Your plan</string>
+    <string name="settings_plan_free">Free</string>
+    <string name="settings_plan_premium">Premium</string>
+    <string name="settings_plan_premium_named">Premium · %1$s</string>
+    <string name="settings_upgrade">Upgrade</string>
+    <string name="settings_switch_monthly">Switch to Monthly</string>
+    <string name="settings_switch_yearly">Switch to Yearly</string>
+    <string name="settings_manage_sub">Manage subscription</string>
+    <string name="settings_manage_sub_sub">Opens Google Play</string>
+    <string name="settings_group_games">Games</string>
+    <string name="settings_games_folder">Games folder</string>
+    <string name="settings_games_folder_none">No folder chosen</string>
+    <string name="settings_emulator">Emulator settings</string>
+    <string name="settings_controls">Controls</string>
+    <string name="settings_controls_none">On-screen · no gamepad connected</string>
+    <string name="settings_controls_pad">%1$s connected</string>
+    <string name="settings_backup">Back up saves</string>
+    <string name="settings_group_appearance">Appearance</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_system">System</string>
+    <string name="settings_group_support">Support</string>
+    <string name="settings_rate">Rate RetroNova</string>
+    <string name="settings_contact">Contact us</string>
+    <string name="settings_privacy">Privacy policy</string>
+    <string name="settings_terms">Terms of use</string>
+    <string name="settings_gdpr">GDPR settings</string>
+    <string name="settings_oss">Open-source licenses</string>
+    <string name="settings_oss_sub">Emulation core: GPL-2.0+ · source code</string>
+    <string name="settings_version">Version</string>
+    <string name="settings_contact_subject">[RetroNova] Support request</string>
+    <string name="settings_contact_body">\n\n—\nApp: RetroNova %1$s\nDevice: %2$s\nAndroid: %3$s\nPlan: %4$s</string>
+    <string name="settings_no_email_app">No email app found. Write to us at %1$s</string>
+    <string name="settings_no_browser">No browser found to open this page.</string>
+    <string name="settings_debug_unlocked">Debug tools unlocked</string>
+
+    <!-- Controls (pad) -->
+    <string name="controls_title">Controls</string>
+    <string name="controls_opacity">On-screen controls opacity</string>
+    <string name="controls_opacity_value">%1$d%%</string>
+    <string name="controls_haptics">Haptic feedback</string>
+    <string name="controls_haptics_sub">Vibrate lightly on every button tap</string>
+    <string name="controls_gamepad">Gamepad</string>
+    <string name="controls_gamepad_none">Connect a Bluetooth or USB gamepad. RetroNova detects it automatically.</string>
+    <string name="controls_remap">Button mapping</string>
+    <string name="controls_remap_sub">Tap a button, then press the gamepad button you want</string>
+    <string name="controls_remap_wait">Press a gamepad button for %1$s…</string>
+    <string name="controls_reset">Reset to default</string>
+    <string name="controls_editor_soon">Drag-and-drop layout editor arrives in a future update.</string>
+
+    <!-- S15 Emulator settings -->
+    <string name="emu_title">Emulator settings</string>
+    <string name="emu_for_game">For %1$s</string>
+    <string name="emu_smart_on">Smart setup is on</string>
+    <string name="emu_smart_off">Smart setup is off</string>
+    <string name="emu_smart_sub">This phone: %1$s performance · %2$s supported</string>
+    <string name="emu_fix_lag">Fix lag</string>
+    <string name="emu_fix_lag_lowest">Lowest settings</string>
+    <string name="emu_what">What does it do?</string>
+    <string name="emu_group_graphics">Graphics</string>
+    <string name="emu_backend">Graphics backend</string>
+    <string name="emu_backend_gles">OpenGL ES</string>
+    <string name="emu_resolution">Resolution</string>
+    <string name="emu_frame_skip">Frame skip</string>
+    <string name="emu_frame_skip_off">Off</string>
+    <string name="emu_frame_skip_auto">Auto</string>
+    <string name="emu_effects">Effects</string>
+    <string name="emu_show_fps">Show FPS</string>
+    <string name="emu_shaders">Shaders</string>
+    <string name="emu_upscaling">Texture upscaling</string>
+    <string name="emu_group_audio">Audio</string>
+    <string name="emu_sound">Sound</string>
+    <string name="emu_latency">Audio latency</string>
+    <string name="emu_latency_low">Low</string>
+    <string name="emu_latency_normal">Normal</string>
+    <string name="emu_latency_high">High</string>
+    <string name="emu_res_value">%1$d×</string>
+    <string name="emu_toast_res">Lowered resolution to 1×</string>
+    <string name="emu_toast_frameskip">Turned frame skip to Auto</string>
+    <string name="emu_toast_effects">Turned effects off</string>
+    <string name="emu_sheet_title">Fix lag</string>
+    <string name="emu_sheet_body">Each tap lowers one setting: first resolution, then frame skip, then effects. Your game keeps running at full speed with a slightly softer picture.</string>
+    <string name="tier_low">low</string>
+    <string name="tier_mid">mid</string>
+    <string name="tier_high">high</string>
+    <string name="tier_unknown">checking</string>
+
+    <!-- Open-source licenses -->
+    <string name="oss_title">Open-source licenses</string>
+    <string name="oss_intro">RetroNova is free software under the GNU General Public License v3.0. It is built on these open-source projects.</string>
+    <string name="oss_source">Source code</string>
+    <string name="oss_source_sub">Complete source for this version of RetroNova</string>
+    <string name="oss_credit_core">Emulation by the PPSSPP project (GPL-2.0+)</string>
+    <string name="oss_full_text">Full license texts</string>
+
+    <!-- Debug (hidden) -->
+    <string name="debug_title">Debug tools</string>
+    <string name="debug_test_crash">Test crash</string>
+    <string name="debug_test_native">Test native crash</string>
+    <string name="debug_test_nonfatal">Test non-fatal</string>
+    <string name="debug_nonfatal_sent">Non-fatal recorded</string>
+    <string name="debug_info">Crash reports follow your privacy choice. Debug builds send them only with -PenableCrashlyticsDebug.</string>
+
+    <!-- Units -->
+    <string name="unit_hours">%1$d h</string>
+    <string name="unit_minutes">%1$d min</string>
+</resources>

@@ -1,0 +1,33 @@
+{
+  "//": "TEMPLATE — this is the SHAPE of the file, not a working config. Register this",
+  "//2": "app's applicationId in the Firebase console (Project settings > Your apps >",
+  "//3": "Add app > Android), download the real google-services.json and drop it next to",
+  "//4": "this file. Never copy another app's file: Firebase matches on package_name.",
+  "project_info": {
+    "project_number": "000000000000",
+    "project_id": "your-firebase-project-id",
+    "storage_bucket": "your-firebase-project-id.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
+        "android_client_info": {
+          "package_name": "io.aetherstudios.template"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "REPLACE_WITH_THE_KEY_FROM_YOUR_OWN_google-services.json"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

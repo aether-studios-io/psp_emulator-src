@@ -1,0 +1,196 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "da5dbde2a5d99d3d7fbd07be84541401",
+    "entities": [
+      {
+        "tableName": "purchases",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`purchase_token` TEXT NOT NULL, `order_id` TEXT, `product_ids` TEXT NOT NULL, `purchase_state` INTEGER NOT NULL, `is_acknowledged` INTEGER NOT NULL DEFAULT 0, `is_consumed` INTEGER NOT NULL DEFAULT 0, `purchase_time` INTEGER NOT NULL, `quantity` INTEGER NOT NULL DEFAULT 1, `obfuscated_account_id` TEXT, `is_auto_renewing` INTEGER NOT NULL DEFAULT 0, `created_at` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, PRIMARY KEY(`purchase_token`))",
+        "fields": [
+          {
+            "fieldPath": "purchaseToken",
+            "columnName": "purchase_token",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "orderId",
+            "columnName": "order_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "productIds",
+            "columnName": "product_ids",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "purchaseState",
+            "columnName": "purchase_state",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isAcknowledged",
+            "columnName": "is_acknowledged",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "isConsumed",
+            "columnName": "is_consumed",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "purchaseTime",
+            "columnName": "purchase_time",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "quantity",
+            "columnName": "quantity",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "1"
+          },
+          {
+            "fieldPath": "obfuscatedAccountId",
+            "columnName": "obfuscated_account_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isAutoRenewing",
+            "columnName": "is_auto_renewing",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "purchase_token"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_purchases_product_ids",
+            "unique": false,
+            "columnNames": [
+              "product_ids"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_purchases_product_ids` ON `${TABLE_NAME}` (`product_ids`)"
+          },
+          {
+            "name": "index_purchases_purchase_state",
+            "unique": false,
+            "columnNames": [
+              "purchase_state"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_purchases_purchase_state` ON `${TABLE_NAME}` (`purchase_state`)"
+          }
+        ]
+      },
+      {
+        "tableName": "entitlements",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`product_id` TEXT NOT NULL, `entitlement_type` TEXT NOT NULL, `is_granted` INTEGER NOT NULL DEFAULT 0, `purchase_token` TEXT, `granted_at` INTEGER, `expires_at` INTEGER, `subscription_state` TEXT, `updated_at` INTEGER NOT NULL, PRIMARY KEY(`product_id`))",
+        "fields": [
+          {
+            "fieldPath": "productId",
+            "columnName": "product_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "entitlementType",
+            "columnName": "entitlement_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isGranted",
+            "columnName": "is_granted",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "purchaseToken",
+            "columnName": "purchase_token",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "grantedAt",
+            "columnName": "granted_at",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "expiresAt",
+            "columnName": "expires_at",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "subscriptionState",
+            "columnName": "subscription_state",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "product_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_entitlements_entitlement_type",
+            "unique": false,
+            "columnNames": [
+              "entitlement_type"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_entitlements_entitlement_type` ON `${TABLE_NAME}` (`entitlement_type`)"
+          },
+          {
+            "name": "index_entitlements_is_granted",
+            "unique": false,
+            "columnNames": [
+              "is_granted"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_entitlements_is_granted` ON `${TABLE_NAME}` (`is_granted`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'da5dbde2a5d99d3d7fbd07be84541401')"
+    ]
+  }
+}

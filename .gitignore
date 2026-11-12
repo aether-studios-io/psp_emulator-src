@@ -1,0 +1,34 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+app/release/
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Firebase config â€” per-app, must be downloaded from the Firebase console for THIS
+# applicationId. See app/google-services.json.example.
+.kotlin/
+
+# Secrets / local (RetroNova spec CLAUDE.md §5a)
+*.jks
+*.keystore
+keystore.properties
+admob.properties
+.env
+build/
+.gradle/
+.idea/
+firebase-debug.log
+
+# Core build intermediates (tools/build_core.sh)
+tools/core-out/

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- RetroNova: light framework shell (Light is the default theme).
+         The real theme is AppTheme (Compose), driven by design_token.json. -->
+    <style name="Theme.App" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#F3F5F9</item>
+    </style>
+
+    <!-- Cold-start splash (MainActivity only). The system splash cannot carry text or a
+         progress bar, so it shows just the launcher icon on the token dark background;
+         the Compose SplashScreen (same background + icon, plus the ads notice and
+         spinner) takes over at the first frame. Always dark, whatever the in-app theme:
+         the theme setting lives in DataStore and cannot be read from a resource theme. -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#002470</item>
+        <item name="postSplashScreenTheme">@style/Theme.App</item>
+    </style>
+</resources>
