@@ -3,7 +3,7 @@
       TEMPLATE: the app UI language is English; keep exactly one values/ folder until a
       real localisation decision is made. Every user-facing string lives here.
     -->
-    <string name="app_name">RetroNova</string>
+    <string name="app_name">Odyssemu</string>
 
     <!-- Component library -->
     <string name="retry">Retry</string>

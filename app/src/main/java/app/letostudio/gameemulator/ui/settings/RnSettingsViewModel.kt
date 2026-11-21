@@ -43,7 +43,7 @@ import kotlinx.coroutines.launch
 
 data class SettingsUiState(
     val pro: ProState = ProState.FREE,
-    val theme: ThemeSetting = ThemeSetting.LIGHT,
+    val theme: ThemeSetting = ThemeSetting.DARK,
     val folderName: String? = null,
     val emu: EmulatorDefaults = EmulatorDefaults(),
     val padName: String? = null,
@@ -105,7 +105,8 @@ class RnSettingsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            proGate.state.collect { if (!it.isPro) nativeAds.request(NativePlacement.SETTINGS) }
+            // Free users: warm the paywall prices too (Upgrade lives on this screen).
+            proGate.state.collect { if (!it.isPro) { nativeAds.request(NativePlacement.SETTINGS); catalog.prefetch() } }
         }
         viewModelScope.launch {
             billing.purchaseResults.collect { r ->
@@ -130,10 +131,10 @@ class RnSettingsViewModel @Inject constructor(
         }
     }
 
-    /** Monthly ↔ Yearly (screens.md: SubscriptionUpdateParams via the template's launch). */
+    /** Weekly (or retired Yearly) -> Monthly (SubscriptionUpdateParams via the template's launch). */
     fun switchPlan(activity: Activity) {
         val from = state.value.pro.plan
-        val target = if (from == ProPlan.MONTHLY) PlanKind.YEARLY else PlanKind.MONTHLY
+        val target = PlanKind.MONTHLY
         analytics.log(AppEvents.CHANGE_PLAN_START, mapOf(AppParams.FROM to from.analytics, AppParams.TO to target.analytics))
         switching.value = true
         viewModelScope.launch {
@@ -167,7 +168,7 @@ class RnSettingsViewModel @Inject constructor(
         analytics.log(AppEvents.CONTACT_US_TAP)
         val s = state.value
         val plan = if (s.pro.isPro) "Premium (${s.pro.plan.analytics})" else "Free"
-        val body = "\n\n—\nApp: RetroNova ${s.version}\nDevice: ${Build.MANUFACTURER} ${Build.MODEL}\nAndroid: ${Build.VERSION.RELEASE}\nPlan: $plan"
+        val body = "\n\n—\nApp: Odyssemu ${s.version}\nDevice: ${Build.MANUFACTURER} ${Build.MODEL}\nAndroid: ${Build.VERSION.RELEASE}\nPlan: $plan"
         viewModelScope.launch { _events.send(SettingsEvent.Email(SUPPORT_EMAIL, app.letostudio.gameemulator.R.string.settings_contact_subject, body)) }
     }
 

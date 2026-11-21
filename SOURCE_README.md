@@ -1,6 +1,6 @@
-# RetroNova — complete corresponding source (GPL-3.0)
+# Odyssemu — complete corresponding source (GPL-3.0)
 
-Source of RetroNova (app.letostudio.gameemulator) at commit 252ce5a.
+Source of Odyssemu (app.letostudio.gameemulator) at commit 78b3ef5.
 
 Build:
 1. Android Studio (JBR 17+), Android SDK 36, NDK 28.2.13676358, CMake 3.31.6.

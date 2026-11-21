@@ -15,11 +15,15 @@ import com.android.billingclient.api.QueryPurchasesParams
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 /** The three RetroNova plans (features.md › Pricing). */
 enum class PlanKind(val analytics: String, val productId: String) {
-    YEARLY("yearly", BillingConfig.PRO_YEARLY),
+    WEEKLY("weekly", BillingConfig.PRO_WEEKLY),
     MONTHLY("monthly", BillingConfig.PRO_MONTHLY),
     LIFETIME("lifetime", BillingConfig.PRO_LIFETIME),
     ;
@@ -36,9 +40,9 @@ data class PlanOption(val kind: PlanKind, val plan: SubscriptionPlan) {
 
 /**
  * Thin adapter over the template billing module (TEMPLATE_NOTES › Billing). Each plan is its
- * own Play product (`gameemulator_pro_yearly` / `_monthly` / `_lifetime`), which is exactly
+ * own Play product (`gameemulator_pro_weekly` / `_monthly` / `_lifetime`), which is exactly
  * what the template builds one card for, so this only tags the template's plans with a
- * [PlanKind] and fixes the order Yearly → Monthly → Lifetime (screens.md S04).
+ * [PlanKind] and fixes the order Weekly → Monthly → Lifetime (screens.md S04).
  *
  * Never edits template billing internals (spec CLAUDE.md §3).
  */
@@ -47,10 +51,32 @@ class PlanCatalog @Inject constructor(
     private val billing: BillingRepository,
     private val clientWrapper: BillingClientWrapper,
 ) {
+    /** Last plans Play returned this process, so the paywall can show prices on its first frame. */
+    @Volatile
+    var cached: List<PlanOption>? = null
+        private set
+
+    private val prefetchScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    @Volatile private var prefetching = false
+
     suspend fun load(): Result<List<PlanOption>> {
         val templatePlans = billing.loadPaywallPlans(StoreConfig.PAYWALL).getOrElse { return Result.failure(it) }
         val all = options(templatePlans)
+        if (all.isNotEmpty()) cached = all
         return if (all.isEmpty()) Result.failure(BillingException(BillingError.ItemUnavailable)) else Result.success(all)
+    }
+
+    /**
+     * Warms [cached] ahead of the paywall (onboarding, Settings): querying Play takes a second
+     * or two, which otherwise shows as a spinner where the plans go. No-op once cached.
+     */
+    fun prefetch() {
+        if (cached != null || prefetching) return
+        prefetching = true
+        prefetchScope.launch {
+            runCatching { load() }
+            prefetching = false
+        }
     }
 
     /** Launches Google Play's purchase sheet; outcome arrives on [BillingRepository.purchaseResults]. */
@@ -70,7 +96,7 @@ class PlanCatalog @Inject constructor(
     }
 
     companion object {
-        /** Template plans → RetroNova options, Yearly first; unknown products are dropped. */
+        /** Template plans → app options, Weekly first; unknown products are dropped. */
         internal fun options(plans: List<SubscriptionPlan>): List<PlanOption> =
             plans.mapNotNull { p -> PlanKind.ofProduct(p.productId)?.let { PlanOption(it, p) } }
                 .sortedBy { it.kind.ordinal }

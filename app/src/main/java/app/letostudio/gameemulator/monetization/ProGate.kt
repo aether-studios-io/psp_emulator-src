@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.first
 
 /** Which plan the user holds. [SUBSCRIPTION] = Pro from a product this build does not know (e.g. added via Remote Config). */
 enum class ProPlan(val analytics: String) {
-    NONE("none"), MONTHLY("monthly"), YEARLY("yearly"), LIFETIME("lifetime"), SUBSCRIPTION("yearly");
+    NONE("none"), WEEKLY("weekly"), MONTHLY("monthly"), YEARLY("yearly"), LIFETIME("lifetime"), SUBSCRIPTION("subscription");
 }
 
 data class ProState(val isPro: Boolean, val plan: ProPlan) {
@@ -41,6 +41,7 @@ class ProGate @Inject constructor(
             val plan = when {
                 status.source == PremiumSource.LIFETIME ||
                     status.activeProductId == BillingConfig.PRO_LIFETIME -> ProPlan.LIFETIME
+                status.activeProductId == BillingConfig.PRO_WEEKLY -> ProPlan.WEEKLY
                 status.activeProductId == BillingConfig.PRO_MONTHLY -> ProPlan.MONTHLY
                 status.activeProductId == BillingConfig.PRO_YEARLY -> ProPlan.YEARLY
                 else -> ProPlan.SUBSCRIPTION
@@ -50,6 +51,7 @@ class ProGate @Inject constructor(
 
         /** Play subscription product behind [plan], for "Manage subscription" deep links. */
         fun productOf(plan: ProPlan): String? = when (plan) {
+            ProPlan.WEEKLY -> BillingConfig.PRO_WEEKLY
             ProPlan.MONTHLY -> BillingConfig.PRO_MONTHLY
             ProPlan.YEARLY -> BillingConfig.PRO_YEARLY
             else -> null

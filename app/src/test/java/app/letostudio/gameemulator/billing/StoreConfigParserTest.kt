@@ -105,13 +105,13 @@ class StoreConfigParserTest {
     @Test
     fun `empty or broken Remote Config gives the paywall the catalogue order`() {
         val order = StoreConfigParser.resolve("").storeNamed(StoreConfig.PAYWALL)!!.items
-        assertEquals(listOf(BillingConfig.PRO_YEARLY, BillingConfig.PRO_MONTHLY, BillingConfig.PRO_LIFETIME), order)
-        val yearly = plan(BillingConfig.PRO_YEARLY, BillingPeriod.YEARLY, hasFreeTrial = true)
+        assertEquals(listOf(BillingConfig.PRO_WEEKLY, BillingConfig.PRO_MONTHLY, BillingConfig.PRO_LIFETIME), order)
+        val weekly = plan(BillingConfig.PRO_WEEKLY, BillingPeriod.WEEKLY, hasFreeTrial = true)
         val monthly = plan(BillingConfig.PRO_MONTHLY, BillingPeriod.MONTHLY)
         val lifetime = plan(BillingConfig.PRO_LIFETIME, BillingPeriod.LIFETIME)
         assertEquals(
-            listOf(BillingConfig.PRO_YEARLY, BillingConfig.PRO_MONTHLY, BillingConfig.PRO_LIFETIME),
-            BillingRepository.selectPaywallPlans(listOf(lifetime, monthly, yearly), order).map { it.productId },
+            listOf(BillingConfig.PRO_WEEKLY, BillingConfig.PRO_MONTHLY, BillingConfig.PRO_LIFETIME),
+            BillingRepository.selectPaywallPlans(listOf(lifetime, monthly, weekly), order).map { it.productId },
         )
     }
 

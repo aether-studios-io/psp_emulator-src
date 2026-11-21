@@ -126,6 +126,19 @@ class PlacementNativeAds @Inject constructor(
         }
     }
 
+    /**
+     * The view showing [ad] was released (screen left or slot disposed). A cached ad keeps
+     * its SDK webview alive and registered on the activity's view tree, so it is destroyed
+     * here, and a fresh one is preloaded for the next time the placement shows.
+     */
+    fun release(ad: NativeAd) {
+        val placement = flows.entries.firstOrNull { it.value.value === ad }?.key ?: return
+        ad.destroy()
+        flows.getValue(placement).value = null
+        loadedAt -= placement
+        request(placement)
+    }
+
     private fun clearAll() {
         flows.values.forEach { flow -> flow.value?.destroy(); flow.value = null }
         loadedAt.clear()

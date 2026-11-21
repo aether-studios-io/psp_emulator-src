@@ -55,6 +55,20 @@ class KeyMapper @Inject constructor(@ApplicationContext private val context: Con
     companion object {
         fun translate(mapping: Map<Int, Int>, keyCode: Int): Int = mapping[keyCode] ?: keyCode
 
+        /**
+         * Android names face buttons by position Xbox-style (A = bottom, B = right, X = left,
+         * Y = top) but LibretroDroid forwards them to the RetroPad by name, where B is bottom,
+         * A right, Y left, X top. Swap so the bottom button is the core's confirm button.
+         * Apply once, right before GLRetroView.sendKeyEvent.
+         */
+        fun toRetroPad(keyCode: Int): Int = when (keyCode) {
+            KeyEvent.KEYCODE_BUTTON_A -> KeyEvent.KEYCODE_BUTTON_B
+            KeyEvent.KEYCODE_BUTTON_B -> KeyEvent.KEYCODE_BUTTON_A
+            KeyEvent.KEYCODE_BUTTON_X -> KeyEvent.KEYCODE_BUTTON_Y
+            KeyEvent.KEYCODE_BUTTON_Y -> KeyEvent.KEYCODE_BUTTON_X
+            else -> keyCode
+        }
+
         fun decode(raw: String?): Map<Int, Int> = raw.orEmpty().split(',').mapNotNull { pair ->
             val (a, b) = pair.split(':').takeIf { it.size == 2 } ?: return@mapNotNull null
             val src = a.toIntOrNull() ?: return@mapNotNull null

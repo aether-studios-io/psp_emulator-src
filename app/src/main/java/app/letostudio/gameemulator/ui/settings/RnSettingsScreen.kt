@@ -140,6 +140,7 @@ fun RnSettingsScreen(
                         RnOverline(stringResource(R.string.settings_your_plan))
                         val planName = when (pro.plan) {
                             ProPlan.NONE -> stringResource(R.string.settings_plan_free)
+                            ProPlan.WEEKLY -> stringResource(R.string.settings_plan_premium_named, stringResource(R.string.plan_weekly))
                             ProPlan.MONTHLY -> stringResource(R.string.settings_plan_premium_named, stringResource(R.string.plan_monthly))
                             ProPlan.YEARLY -> stringResource(R.string.settings_plan_premium_named, stringResource(R.string.plan_yearly))
                             ProPlan.LIFETIME -> stringResource(R.string.settings_plan_premium_named, stringResource(R.string.plan_lifetime))
@@ -149,9 +150,9 @@ fun RnSettingsScreen(
                     }
                     when (pro.plan) {
                         ProPlan.NONE -> RnButton(stringResource(R.string.settings_upgrade), onUpgrade, small = true)
-                        ProPlan.MONTHLY -> RnButton(stringResource(R.string.settings_switch_yearly), onSwitch, small = true, loading = state.switching)
-                        ProPlan.YEARLY -> RnButton(stringResource(R.string.settings_switch_monthly), onSwitch, small = true, loading = state.switching)
-                        ProPlan.LIFETIME, ProPlan.SUBSCRIPTION -> Unit
+                        // Weekly (and the retired Yearly) can move to Monthly; Monthly is the top sub.
+                        ProPlan.WEEKLY, ProPlan.YEARLY -> RnButton(stringResource(R.string.settings_switch_monthly), onSwitch, small = true, loading = state.switching)
+                        ProPlan.MONTHLY, ProPlan.LIFETIME, ProPlan.SUBSCRIPTION -> Unit
                     }
                 }
                 if (pro.isPro && pro.plan != ProPlan.LIFETIME) {

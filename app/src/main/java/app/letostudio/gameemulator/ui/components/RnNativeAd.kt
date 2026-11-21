@@ -13,7 +13,10 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
@@ -24,6 +27,12 @@ import app.letostudio.gameemulator.ui.theme.RnTheme
 import com.google.android.gms.ads.nativead.MediaView
 import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdView
+
+/**
+ * Called with the ad whose view was released, so its owner can destroy it (a cached
+ * NativeAd otherwise keeps its webview alive). Provided once by the nav shell.
+ */
+val LocalNativeAdRelease = staticCompositionLocalOf<(NativeAd) -> Unit> { {} }
 
 /**
  * RetroNova native ad (design_token.json › nativeAd): surface card, radius 12, "Ad" label,
@@ -39,11 +48,31 @@ fun RnNativeAd(nativeAd: NativeAd?, medium: Boolean, modifier: Modifier = Modifi
         AdColors(c.surface.toArgb(), c.line.toArgb(), c.ink.toArgb(), c.inkMuted.toArgb(), c.surfaceSunken.toArgb())
     }
     val label = stringResource(R.string.ad_label)
+    val release by rememberUpdatedState(LocalNativeAdRelease.current)
+    val bound by rememberUpdatedState(nativeAd)
     AndroidView(
         modifier = modifier.fillMaxWidth(),
-        factory = { ctx -> build(ctx, colors, label, medium) },
+        factory = { ctx ->
+            build(ctx, colors, label, medium).apply {
+                // Tear down while still attached: the SDK unregisters its scroll listener
+                // from the window's ViewTreeObserver, which a detached view no longer
+                // reaches (LeakCanary: ViewTreeObserver -> nativead.cq -> ad webview).
+                // Releasing clears the cached ad, so this node leaves composition and a
+                // fresh view binds the next ad.
+                addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+                    override fun onViewAttachedToWindow(v: View) = Unit
+                    override fun onViewDetachedFromWindow(v: View) {
+                        destroy()
+                        release(bound)
+                    }
+                })
+            }
+        },
         update = { it.bind(nativeAd) },
-        onRelease = { it.destroy() },
+        onRelease = {
+            it.destroy()
+            release(bound)
+        },
     )
 }
 

@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.letostudio.gameemulator.R
 import app.letostudio.gameemulator.ui.components.RnIcon
+import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
@@ -47,8 +49,10 @@ private val Glass = Color(0x8F080C14)
 private val Edge = Color(0x47FFFFFF)
 
 /**
- * On-screen controls (F08), positions from styles/app.css `.rn-pad-*` (844×390 landscape
- * artboard). Each control is its own pointer target, so several can be held at once.
+ * On-screen controls (F08), laid out on the 844×390 landscape artboard and multiplied by
+ * [scale] (the "controls size" setting). The D-pad and the face buttons are each one touch
+ * area: a touch anywhere in the cluster drives the nearest button (D-pad: 8-way), so the gaps
+ * between buttons are not dead zones and a thumb can slide from one button to the next.
  */
 @Composable
 fun VirtualPad(
@@ -59,16 +63,18 @@ fun VirtualPad(
     onPause: () -> Unit,
     pauseDescription: String,
     modifier: Modifier = Modifier,
+    scale: Float = 1f,
 ) {
     val view = LocalView.current
     val press: (Int, Boolean) -> Unit = { code, down ->
         if (down && haptics) view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
         onKey(code, down)
     }
+    val k = scale
     Box(modifier.fillMaxSize().navigationBarsPadding().alpha(opacity)) {
         // Shoulders
-        PadButton("L", KeyEvent.KEYCODE_BUTTON_L1, press, RoundedCornerShape(10.dp), Modifier.align(Alignment.TopStart).padding(start = 20.dp, top = 14.dp).size(84.dp, 32.dp))
-        PadButton("R", KeyEvent.KEYCODE_BUTTON_R1, press, RoundedCornerShape(10.dp), Modifier.align(Alignment.TopEnd).padding(end = 20.dp, top = 14.dp).size(84.dp, 32.dp))
+        PadButton("L", KeyEvent.KEYCODE_BUTTON_L1, press, RoundedCornerShape(12.dp), Modifier.align(Alignment.TopStart).padding(start = 20.dp, top = 12.dp).size(92.dp * k, 44.dp * k))
+        PadButton("R", KeyEvent.KEYCODE_BUTTON_R1, press, RoundedCornerShape(12.dp), Modifier.align(Alignment.TopEnd).padding(end = 20.dp, top = 12.dp).size(92.dp * k, 44.dp * k))
         // Pause (glass, top centre)
         Box(
             Modifier
@@ -82,29 +88,147 @@ fun VirtualPad(
             contentAlignment = Alignment.Center,
         ) { RnIcon(R.drawable.ms_pause_fill, tint = Color.White) }
 
-        // D-pad 132×132 at (36, 70)
-        Box(Modifier.align(Alignment.CenterStart).padding(start = 36.dp).offset(y = (-20).dp).size(132.dp)) {
-            PadButton("▲", KeyEvent.KEYCODE_DPAD_UP, press, RoundedCornerShape(10.dp), Modifier.align(Alignment.TopCenter).size(44.dp), icon = R.drawable.ms_arrow_drop_up)
-            PadButton("▼", KeyEvent.KEYCODE_DPAD_DOWN, press, RoundedCornerShape(10.dp), Modifier.align(Alignment.BottomCenter).size(44.dp), icon = R.drawable.ms_arrow_drop_down)
-            PadButton("◀", KeyEvent.KEYCODE_DPAD_LEFT, press, RoundedCornerShape(10.dp), Modifier.align(Alignment.CenterStart).size(44.dp), icon = R.drawable.ms_arrow_left)
-            PadButton("▶", KeyEvent.KEYCODE_DPAD_RIGHT, press, RoundedCornerShape(10.dp), Modifier.align(Alignment.CenterEnd).size(44.dp), icon = R.drawable.ms_arrow_right)
-        }
-        // Analog stick 76 at (150, bottom 18)
-        Stick(onStick, Modifier.align(Alignment.BottomStart).padding(start = 150.dp, bottom = 18.dp))
+        DPad(press, Modifier.align(Alignment.CenterStart).padding(start = 28.dp).offset(y = (-16).dp).size(DPAD_DP.dp * k))
+        Stick(onStick, k, Modifier.align(Alignment.BottomStart).padding(start = 150.dp * k, bottom = 14.dp))
+        FaceButtons(press, Modifier.align(Alignment.CenterEnd).padding(end = 28.dp).offset(y = (-16).dp).size(FACE_DP.dp * k))
 
-        // Face buttons 144×144 at (right 36, 64)
-        Box(Modifier.align(Alignment.CenterEnd).padding(end = 36.dp).offset(y = (-20).dp).size(144.dp)) {
-            PadButton("Y", KeyEvent.KEYCODE_BUTTON_Y, press, CircleShape, Modifier.align(Alignment.TopCenter).size(50.dp))
-            PadButton("A", KeyEvent.KEYCODE_BUTTON_A, press, CircleShape, Modifier.align(Alignment.BottomCenter).size(50.dp), fill = Color(0xD90070D1), edge = Color(0x80FFFFFF))
-            PadButton("X", KeyEvent.KEYCODE_BUTTON_X, press, CircleShape, Modifier.align(Alignment.CenterStart).size(50.dp))
-            PadButton("B", KeyEvent.KEYCODE_BUTTON_B, press, CircleShape, Modifier.align(Alignment.CenterEnd).size(50.dp))
-        }
         // SELECT / START bottom centre
-        Row(Modifier.align(Alignment.BottomCenter).padding(bottom = 18.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            PadButton("SELECT", KeyEvent.KEYCODE_BUTTON_SELECT, press, RoundedCornerShape(999.dp), Modifier.size(72.dp, 28.dp), small = true)
-            PadButton("START", KeyEvent.KEYCODE_BUTTON_START, press, RoundedCornerShape(999.dp), Modifier.size(72.dp, 28.dp), small = true)
+        Row(Modifier.align(Alignment.BottomCenter).padding(bottom = 14.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            PadButton("SELECT", KeyEvent.KEYCODE_BUTTON_SELECT, press, RoundedCornerShape(999.dp), Modifier.size(80.dp * k, 36.dp * k), small = true)
+            PadButton("START", KeyEvent.KEYCODE_BUTTON_START, press, RoundedCornerShape(999.dp), Modifier.size(80.dp * k, 36.dp * k), small = true)
         }
     }
+}
+
+private const val DPAD_DP = 150
+private const val DPAD_KEY_DP = 52
+private const val FACE_DP = 170
+private const val FACE_KEY_DP = 60
+
+/** Touch geometry for the clustered controls; pure so it is unit-tested. */
+internal object PadGeometry {
+    private val faceKeys = intArrayOf(KeyEvent.KEYCODE_BUTTON_Y, KeyEvent.KEYCODE_BUTTON_B, KeyEvent.KEYCODE_BUTTON_A, KeyEvent.KEYCODE_BUTTON_X)
+    private const val RAD = FACE_KEY_DP / 2f / FACE_DP
+    private val faceX = floatArrayOf(0.5f, 1 - RAD, 0.5f, RAD)
+    private val faceY = floatArrayOf(RAD, 0.5f, 1 - RAD, 0.5f)
+    private const val DEAD = 0.1f
+    private const val TAN_22 = 0.4142f
+
+    /** The face key nearest to (fx, fy), given as fractions of the cluster side. */
+    fun face(fx: Float, fy: Float): Int {
+        var best = 0
+        var bestD = Float.MAX_VALUE
+        for (i in faceKeys.indices) {
+            val d = (fx - faceX[i]) * (fx - faceX[i]) + (fy - faceY[i]) * (fy - faceY[i])
+            if (d < bestD) { bestD = d; best = i }
+        }
+        return faceKeys[best]
+    }
+
+    /**
+     * 8-way D-pad for (fx, fy) as fractions of the pad side. A direction is on within 67.5°
+     * of its axis, so diagonals press two keys; the centre is a small dead zone.
+     */
+    fun dpad(fx: Float, fy: Float): Set<Int> {
+        val dx = fx - 0.5f
+        val dy = fy - 0.5f
+        if (dx * dx + dy * dy < DEAD * DEAD) return emptySet()
+        val keys = mutableSetOf<Int>()
+        if (dx > TAN_22 * abs(dy)) keys += KeyEvent.KEYCODE_DPAD_RIGHT
+        if (-dx > TAN_22 * abs(dy)) keys += KeyEvent.KEYCODE_DPAD_LEFT
+        if (dy > TAN_22 * abs(dx)) keys += KeyEvent.KEYCODE_DPAD_DOWN
+        if (-dy > TAN_22 * abs(dx)) keys += KeyEvent.KEYCODE_DPAD_UP
+        return keys
+    }
+}
+
+/**
+ * One touch area for several keys: every pressed pointer maps to keys via [keysAt] (fractions
+ * of the area's size), and the union is diffed so only changes are sent. Held keys are
+ * released if the area leaves composition mid-press.
+ */
+private fun Modifier.clusterInput(
+    keysAt: (Float, Float) -> Set<Int>,
+    onKey: () -> (Int, Boolean) -> Unit,
+    onHeld: (Set<Int>) -> Unit,
+): Modifier = pointerInput(Unit) {
+    var held = emptySet<Int>()
+    try {
+        awaitPointerEventScope {
+            while (true) {
+                val e = awaitPointerEvent()
+                val now = mutableSetOf<Int>()
+                e.changes.forEach { c ->
+                    if (c.pressed) now += keysAt(c.position.x / size.width, c.position.y / size.height)
+                    c.consume()
+                }
+                if (now != held) {
+                    val send = onKey()
+                    (held - now).forEach { send(it, false) }
+                    (now - held).forEach { send(it, true) }
+                    held = now
+                    onHeld(now)
+                }
+            }
+        }
+    } finally {
+        val send = onKey()
+        held.forEach { send(it, false) }
+    }
+}
+
+@Composable
+private fun DPad(onKey: (Int, Boolean) -> Unit, modifier: Modifier) {
+    val latest by rememberUpdatedState(onKey)
+    var held by remember { mutableStateOf(emptySet<Int>()) }
+    Box(
+        modifier
+            .semantics { contentDescription = "D-pad" }
+            .clusterInput(PadGeometry::dpad, { latest }, { held = it }),
+    ) {
+        val frac = DPAD_KEY_DP / DPAD_DP.toFloat()
+        val shape = RoundedCornerShape(12.dp)
+        KeyFace(KeyEvent.KEYCODE_DPAD_UP in held, shape, Modifier.align(Alignment.TopCenter).fillMaxSize(frac)) { ArrowIcon(R.drawable.ms_arrow_drop_up) }
+        KeyFace(KeyEvent.KEYCODE_DPAD_DOWN in held, shape, Modifier.align(Alignment.BottomCenter).fillMaxSize(frac)) { ArrowIcon(R.drawable.ms_arrow_drop_down) }
+        KeyFace(KeyEvent.KEYCODE_DPAD_LEFT in held, shape, Modifier.align(Alignment.CenterStart).fillMaxSize(frac)) { ArrowIcon(R.drawable.ms_arrow_left) }
+        KeyFace(KeyEvent.KEYCODE_DPAD_RIGHT in held, shape, Modifier.align(Alignment.CenterEnd).fillMaxSize(frac)) { ArrowIcon(R.drawable.ms_arrow_right) }
+    }
+}
+
+@Composable
+private fun ArrowIcon(icon: Int) = RnIcon(icon, tint = Color.White, size = 34.dp)
+
+@Composable
+private fun FaceButtons(onKey: (Int, Boolean) -> Unit, modifier: Modifier) {
+    val latest by rememberUpdatedState(onKey)
+    var held by remember { mutableStateOf(emptySet<Int>()) }
+    Box(
+        modifier
+            .semantics { contentDescription = "Face buttons" }
+            .clusterInput({ x, y -> setOf(PadGeometry.face(x, y)) }, { latest }, { held = it }),
+    ) {
+        val frac = FACE_KEY_DP / FACE_DP.toFloat()
+        FaceKey("Y", KeyEvent.KEYCODE_BUTTON_Y in held, Modifier.align(Alignment.TopCenter).fillMaxSize(frac))
+        FaceKey("A", KeyEvent.KEYCODE_BUTTON_A in held, Modifier.align(Alignment.BottomCenter).fillMaxSize(frac), fill = Color(0xD90070D1), edge = Color(0x80FFFFFF))
+        FaceKey("X", KeyEvent.KEYCODE_BUTTON_X in held, Modifier.align(Alignment.CenterStart).fillMaxSize(frac))
+        FaceKey("B", KeyEvent.KEYCODE_BUTTON_B in held, Modifier.align(Alignment.CenterEnd).fillMaxSize(frac))
+    }
+}
+
+@Composable
+private fun FaceKey(label: String, down: Boolean, modifier: Modifier, fill: Color = Glass, edge: Color = Edge) {
+    KeyFace(down, CircleShape, modifier, fill, edge) {
+        Text(label, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+    }
+}
+
+/** Visual only: input comes from the enclosing cluster. */
+@Composable
+private fun KeyFace(down: Boolean, shape: Shape, modifier: Modifier, fill: Color = Glass, edge: Color = Edge, content: @Composable () -> Unit) {
+    Box(
+        modifier.background(if (down) fill.copy(alpha = 1f) else fill, shape).border(1.5.dp, edge, shape),
+        contentAlignment = Alignment.Center,
+    ) { content() }
 }
 
 @Composable
@@ -116,7 +240,6 @@ private fun PadButton(
     modifier: Modifier,
     fill: Color = Glass,
     edge: Color = Edge,
-    icon: Int? = null,
     small: Boolean = false,
 ) {
     var down by remember { mutableStateOf(false) }
@@ -140,18 +263,14 @@ private fun PadButton(
             },
         contentAlignment = Alignment.Center,
     ) {
-        if (icon != null) {
-            RnIcon(icon, tint = Color.White, size = 32.dp)
-        } else {
-            Text(label, color = Color.White, fontWeight = FontWeight.Bold, fontSize = if (small) 12.sp else 16.sp, letterSpacing = if (small) 0.6.sp else 0.sp)
-        }
+        Text(label, color = Color.White, fontWeight = FontWeight.Bold, fontSize = if (small) 12.sp else 16.sp, letterSpacing = if (small) 0.6.sp else 0.sp)
     }
 }
 
 @Composable
-private fun BoxScope.Stick(onStick: (Float, Float) -> Unit, modifier: Modifier) {
+private fun BoxScope.Stick(onStick: (Float, Float) -> Unit, scale: Float, modifier: Modifier) {
     var knob by remember { mutableStateOf(Offset.Zero) }
-    val sizeDp = 76.dp
+    val sizeDp = 84.dp * scale
     Box(
         modifier
             .size(sizeDp)
@@ -185,7 +304,7 @@ private fun BoxScope.Stick(onStick: (Float, Float) -> Unit, modifier: Modifier) 
         Box(
             Modifier
                 .offset { IntOffset(knob.x.roundToInt(), knob.y.roundToInt()) }
-                .size(36.dp)
+                .size(40.dp * scale)
                 .background(Color(0x8CFFFFFF), CircleShape),
         )
     }

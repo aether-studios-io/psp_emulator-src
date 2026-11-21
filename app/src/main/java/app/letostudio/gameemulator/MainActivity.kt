@@ -135,7 +135,7 @@ class MainActivity : ComponentActivity() {
             val themeFlow = remember {
                 settingsRepository.settings.map { it.themeMode }.distinctUntilChanged()
             }
-            val themeSetting by themeFlow.collectAsStateWithLifecycle(initialValue = ThemeSetting.LIGHT)
+            val themeSetting by themeFlow.collectAsStateWithLifecycle(initialValue = ThemeSetting.DARK)
 
             // Cold-start gates (FR-034/FR-048): decided once per activity creation
             // from the persisted onboarding flag and the locally cached premium

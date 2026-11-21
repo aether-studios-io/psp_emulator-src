@@ -32,7 +32,7 @@ import kotlinx.coroutines.launch
 data class PaywallUiState(
     val loading: Boolean = true,
     val plans: List<PlanOption> = emptyList(),
-    val selected: PlanKind = PlanKind.YEARLY,
+    val selected: PlanKind = PlanKind.WEEKLY,
     val error: Boolean = false,
     val purchasing: Boolean = false,
     val showLifetimeNote: Boolean = false,
@@ -78,26 +78,37 @@ class RnPaywallViewModel @Inject constructor(
     }
 
     fun load() {
-        _state.update { it.copy(loading = true, error = false) }
+        // Plans prefetched during onboarding/Settings show on the first frame; Play is still
+        // asked again below so prices stay current.
+        val cached = catalog.cached
+        if (cached != null) showPlans(cached) else _state.update { it.copy(loading = true, error = false) }
         viewModelScope.launch {
-            val current = proGate.state.first().plan
+            _state.update { it.copy(currentPlan = proGate.state.first().plan) }
             catalog.load()
-                .onSuccess { plans ->
-                    val autoRenew = runCatching { catalog.hasAutoRenewingSubscription() }.getOrDefault(false)
-                    _state.update {
-                        it.copy(
-                            loading = false,
-                            plans = plans,
-                            selected = if (plans.any { p -> p.kind == PlanKind.YEARLY }) PlanKind.YEARLY else plans.first().kind,
-                            hasAutoRenewingSub = autoRenew,
-                            currentPlan = current,
-                        ).withNote()
-                    }
-                }
-                .onFailure { e ->
+                .onSuccess { plans -> showPlans(plans) }
+                .onFailure {
                     crash.breadcrumb("billing", "plans load failed")
-                    _state.update { it.copy(loading = false, error = true) }
+                    if (_state.value.plans.isEmpty()) _state.update { it.copy(loading = false, error = true) }
                 }
+            // Only drives the Lifetime note: never hold the prices back for it.
+            val autoRenew = runCatching { catalog.hasAutoRenewingSubscription() }.getOrDefault(false)
+            _state.update { it.copy(hasAutoRenewingSub = autoRenew).withNote() }
+        }
+    }
+
+    private fun showPlans(plans: List<PlanOption>) {
+        _state.update {
+            val keep = it.plans.isNotEmpty() && plans.any { p -> p.kind == it.selected }
+            it.copy(
+                loading = false,
+                error = false,
+                plans = plans,
+                selected = when {
+                    keep -> it.selected
+                    plans.any { p -> p.kind == PlanKind.WEEKLY } -> PlanKind.WEEKLY
+                    else -> plans.first().kind
+                },
+            ).withNote()
         }
     }
 

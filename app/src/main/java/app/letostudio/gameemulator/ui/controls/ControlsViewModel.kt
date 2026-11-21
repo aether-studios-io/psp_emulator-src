@@ -35,6 +35,11 @@ class ControlsViewModel @Inject constructor(
     fun logOpacity(v: Float) =
         analytics.log(AppEvents.SETTING_CHANGE, mapOf(AppParams.KEY to "pad_opacity", AppParams.VALUE to (v * 100).toInt().toString()))
 
+    fun setSize(v: Float) {
+        analytics.log(AppEvents.SETTING_CHANGE, mapOf(AppParams.KEY to "pad_size", AppParams.VALUE to (v * 100).toInt().toString()))
+        viewModelScope.launch { settingsStore.setPadSize(v) }
+    }
+
     fun setHaptics(on: Boolean) {
         analytics.log(AppEvents.SETTING_CHANGE, mapOf(AppParams.KEY to "pad_haptics", AppParams.VALUE to on.toString()))
         viewModelScope.launch { settingsStore.setPadHaptics(on) }

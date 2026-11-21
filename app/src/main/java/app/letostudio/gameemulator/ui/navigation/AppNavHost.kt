@@ -1,5 +1,7 @@
 package app.letostudio.gameemulator.ui.navigation
 
+import app.letostudio.gameemulator.ui.components.LocalNativeAdRelease
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -85,111 +87,115 @@ fun AppNavHost(startOnOnboarding: Boolean = false, @Suppress("UNUSED_PARAMETER")
     val tabRoutes = listOf(Routes.LIBRARY, Routes.HOMEBREW, Routes.SETTINGS)
     val showBottomBar = route in Routes.tabRoutes
 
-    Scaffold(
-        containerColor = RnTheme.colors.ground,
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        snackbarHost = { SnackbarHost(snackbar) },
-        bottomBar = {
-            if (showBottomBar) {
-                RnBottomNav(tabs, tabRoutes.indexOf(route).coerceAtLeast(0)) { i ->
-                    navController.navigateToTab(tabRoutes[i])
-                }
-            }
-        },
-    ) { inner ->
-        NavHost(
-            navController = navController,
-            startDestination = if (startOnOnboarding) Routes.ONBOARDING else Routes.LIBRARY,
-            modifier = Modifier.padding(inner).consumeWindowInsets(inner),
-        ) {
-            composable(Routes.ONBOARDING) {
-                RnOnboardingRoute(onFinished = {
-                    scope.launch {
-                        val pro = entry.proGate().state.first().isPro
-                        navController.navigate(if (pro) Routes.LIBRARY else Routes.paywall("onboarding")) {
-                            popUpTo(Routes.ONBOARDING) { inclusive = true }
-                        }
+    // Stable lambda: a static local would recompose the whole tree if it changed.
+    val releaseAd = remember(entry) { { ad: com.google.android.gms.ads.nativead.NativeAd -> entry.nativeAds().release(ad) } }
+    CompositionLocalProvider(LocalNativeAdRelease provides releaseAd) {
+        Scaffold(
+            containerColor = RnTheme.colors.ground,
+            contentWindowInsets = WindowInsets(0, 0, 0, 0),
+            snackbarHost = { SnackbarHost(snackbar) },
+            bottomBar = {
+                if (showBottomBar) {
+                    RnBottomNav(tabs, tabRoutes.indexOf(route).coerceAtLeast(0)) { i ->
+                        navController.navigateToTab(tabRoutes[i])
                     }
-                })
-            }
-            composable(
-                Routes.PAYWALL,
-                arguments = listOf(navArgument("source") { type = NavType.StringType; defaultValue = "settings" }),
+                }
+            },
+        ) { inner ->
+            NavHost(
+                navController = navController,
+                startDestination = if (startOnOnboarding) Routes.ONBOARDING else Routes.LIBRARY,
+                modifier = Modifier.padding(inner).consumeWindowInsets(inner),
             ) {
-                RnPaywallRoute(
-                    onClose = {
-                        if (navController.previousBackStackEntry != null) {
-                            navController.popBackStack()
-                        } else {
-                            navController.navigate(Routes.LIBRARY) { popUpTo(Routes.PAYWALL) { inclusive = true } }
+                composable(Routes.ONBOARDING) {
+                    RnOnboardingRoute(onFinished = {
+                        scope.launch {
+                            val pro = entry.proGate().state.first().isPro
+                            navController.navigate(if (pro) Routes.LIBRARY else Routes.paywall("onboarding")) {
+                                popUpTo(Routes.ONBOARDING) { inclusive = true }
+                            }
                         }
-                    },
-                    snackbar = snackbar,
-                )
+                    })
+                }
+                composable(
+                    Routes.PAYWALL,
+                    arguments = listOf(navArgument("source") { type = NavType.StringType; defaultValue = "settings" }),
+                ) {
+                    RnPaywallRoute(
+                        onClose = {
+                            if (navController.previousBackStackEntry != null) {
+                                navController.popBackStack()
+                            } else {
+                                navController.navigate(Routes.LIBRARY) { popUpTo(Routes.PAYWALL) { inclusive = true } }
+                            }
+                        },
+                        snackbar = snackbar,
+                    )
+                }
+                composable(Routes.LIBRARY) {
+                    LibraryRoute(
+                        onOpenGame = { navController.navigate(Routes.game(it)) },
+                        onPlay = { navController.navigate(Routes.player(it, 0, "continue")) },
+                        onAddGames = { navController.navigate(Routes.IMPORT) },
+                        onOpenHomebrew = { navController.navigateToTab(Routes.HOMEBREW) },
+                    )
+                }
+                composable(Routes.IMPORT) {
+                    ImportRoute(onBack = { navController.popBackStack() }, onDone = { navController.popBackStack() }, snackbar = snackbar)
+                }
+                composable(Routes.GAME, arguments = listOf(navArgument("gameId") { type = NavType.LongType })) {
+                    GameDetailRoute(
+                        onBack = { navController.popBackStack() },
+                        onPlay = { id, slot -> navController.navigate(Routes.player(id, slot, if (slot == null) "game_detail" else "slot")) },
+                        onGraphics = { navController.navigate(Routes.emuSettings(it)) },
+                        onControls = { navController.navigate(Routes.controls(it)) },
+                        onPaywall = { navController.navigate(Routes.paywall("save_slot")) },
+                        snackbar = snackbar,
+                    )
+                }
+                composable(Routes.HOMEBREW) {
+                    HomebrewRoute(
+                        onGuide = { navController.navigate(Routes.HOMEBREW_GUIDE) },
+                        onGameAdded = { navController.navigate(Routes.game(it)) },
+                        snackbar = snackbar,
+                    )
+                }
+                composable(Routes.HOMEBREW_GUIDE) { HomebrewGuideRoute(onBack = { navController.popBackStack() }) }
+                composable(
+                    Routes.PLAYER,
+                    arguments = listOf(
+                        navArgument("gameId") { type = NavType.LongType },
+                        navArgument("slot") { type = NavType.IntType; defaultValue = -1 },
+                        navArgument("source") { type = NavType.StringType; defaultValue = "game_detail" },
+                    ),
+                ) {
+                    PlayerRoute(onExit = { navController.popBackStack() })
+                }
+                composable(Routes.SETTINGS) {
+                    RnSettingsRoute(
+                        onUpgrade = { navController.navigate(Routes.paywall("settings")) },
+                        onGamesFolder = { navController.navigate(Routes.IMPORT) },
+                        onEmulator = { navController.navigate(Routes.emuSettings(null)) },
+                        onControls = { navController.navigate(Routes.controls(null)) },
+                        onOss = { navController.navigate(Routes.OSS) },
+                        onDebug = { navController.navigate(Routes.DEBUG) },
+                        debugAllowed = entry.remoteFlags().debugMenuAllowed,
+                        snackbar = snackbar,
+                    )
+                }
+                composable(Routes.EMU_SETTINGS, arguments = listOf(navArgument("gameId") { type = NavType.LongType; defaultValue = -1L })) {
+                    EmuSettingsRoute(
+                        onBack = { navController.popBackStack() },
+                        onPaywall = { navController.navigate(Routes.paywall("emu_settings")) },
+                        snackbar = snackbar,
+                    )
+                }
+                composable(Routes.CONTROLS, arguments = listOf(navArgument("gameId") { type = NavType.LongType; defaultValue = -1L })) {
+                    ControlsRoute(onBack = { navController.popBackStack() })
+                }
+                composable(Routes.OSS) { OssLicensesRoute(onBack = { navController.popBackStack() }) }
+                composable(Routes.DEBUG) { DebugRoute(onBack = { navController.popBackStack() }) }
             }
-            composable(Routes.LIBRARY) {
-                LibraryRoute(
-                    onOpenGame = { navController.navigate(Routes.game(it)) },
-                    onPlay = { navController.navigate(Routes.player(it, 0, "continue")) },
-                    onAddGames = { navController.navigate(Routes.IMPORT) },
-                    onOpenHomebrew = { navController.navigateToTab(Routes.HOMEBREW) },
-                )
-            }
-            composable(Routes.IMPORT) {
-                ImportRoute(onBack = { navController.popBackStack() }, onDone = { navController.popBackStack() }, snackbar = snackbar)
-            }
-            composable(Routes.GAME, arguments = listOf(navArgument("gameId") { type = NavType.LongType })) {
-                GameDetailRoute(
-                    onBack = { navController.popBackStack() },
-                    onPlay = { id, slot -> navController.navigate(Routes.player(id, slot, if (slot == null) "game_detail" else "slot")) },
-                    onGraphics = { navController.navigate(Routes.emuSettings(it)) },
-                    onControls = { navController.navigate(Routes.controls(it)) },
-                    onPaywall = { navController.navigate(Routes.paywall("save_slot")) },
-                    snackbar = snackbar,
-                )
-            }
-            composable(Routes.HOMEBREW) {
-                HomebrewRoute(
-                    onGuide = { navController.navigate(Routes.HOMEBREW_GUIDE) },
-                    onGameAdded = { navController.navigate(Routes.game(it)) },
-                    snackbar = snackbar,
-                )
-            }
-            composable(Routes.HOMEBREW_GUIDE) { HomebrewGuideRoute(onBack = { navController.popBackStack() }) }
-            composable(
-                Routes.PLAYER,
-                arguments = listOf(
-                    navArgument("gameId") { type = NavType.LongType },
-                    navArgument("slot") { type = NavType.IntType; defaultValue = -1 },
-                    navArgument("source") { type = NavType.StringType; defaultValue = "game_detail" },
-                ),
-            ) {
-                PlayerRoute(onExit = { navController.popBackStack() })
-            }
-            composable(Routes.SETTINGS) {
-                RnSettingsRoute(
-                    onUpgrade = { navController.navigate(Routes.paywall("settings")) },
-                    onGamesFolder = { navController.navigate(Routes.IMPORT) },
-                    onEmulator = { navController.navigate(Routes.emuSettings(null)) },
-                    onControls = { navController.navigate(Routes.controls(null)) },
-                    onOss = { navController.navigate(Routes.OSS) },
-                    onDebug = { navController.navigate(Routes.DEBUG) },
-                    debugAllowed = entry.remoteFlags().debugMenuAllowed,
-                    snackbar = snackbar,
-                )
-            }
-            composable(Routes.EMU_SETTINGS, arguments = listOf(navArgument("gameId") { type = NavType.LongType; defaultValue = -1L })) {
-                EmuSettingsRoute(
-                    onBack = { navController.popBackStack() },
-                    onPaywall = { navController.navigate(Routes.paywall("emu_settings")) },
-                    snackbar = snackbar,
-                )
-            }
-            composable(Routes.CONTROLS, arguments = listOf(navArgument("gameId") { type = NavType.LongType; defaultValue = -1L })) {
-                ControlsRoute(onBack = { navController.popBackStack() })
-            }
-            composable(Routes.OSS) { OssLicensesRoute(onBack = { navController.popBackStack() }) }
-            composable(Routes.DEBUG) { DebugRoute(onBack = { navController.popBackStack() }) }
         }
     }
 }

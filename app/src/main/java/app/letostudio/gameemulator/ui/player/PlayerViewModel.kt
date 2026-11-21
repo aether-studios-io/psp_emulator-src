@@ -48,6 +48,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.runInterruptible
 
 enum class PlayerPhase { LOADING, RUNNING, PAUSED, ERROR, EXITING }
 
@@ -116,6 +118,8 @@ class PlayerViewModel @Inject constructor(
     private var gamepadUsed = false
     private var stoppedAt = 0L
     private var pendingStateToLoad: ByteArray? = null
+    /** Set while a resumed slot waits to be applied (see maybeApplyPendingState). */
+    private var stateView: GLRetroView? = null
 
     init {
         analytics.screen(AppScreens.PLAYER)
@@ -177,18 +181,24 @@ class PlayerViewModel @Inject constructor(
         null
     }
 
-    /** First frame rendered: the core is up. Loads the requested slot, logs game_start. */
+    /**
+     * Called for every rendered frame; the first one means the core is up (logs game_start).
+     * A slot to resume is applied later, by [maybeApplyPendingState].
+     */
     fun onFirstFrame(view: GLRetroView) {
-        if (started) return
+        if (started) {
+            maybeApplyPendingState()
+            return
+        }
         started = true
         crash.breadcrumb("core", "load end")
-        pendingStateToLoad?.let { bytes ->
-            val ok = runCatching { view.unserializeState(bytes) }.getOrDefault(false)
-            if (!ok) viewModelScope.launch { _events.send(PlayerEvent.Toast(app.letostudio.gameemulator.R.string.toast_load_failed)) }
-            pendingStateToLoad = null
+        if (pendingStateToLoad != null) {
+            // Stay on the loading spinner until the saved state is in.
+            stateView = view
+        } else {
+            activeSince = System.currentTimeMillis()
+            _state.update { it.copy(phase = PlayerPhase.RUNNING) }
         }
-        activeSince = System.currentTimeMillis()
-        _state.update { it.copy(phase = PlayerPhase.RUNNING) }
         val g = _state.value.game ?: return
         analytics.log(
             AppEvents.GAME_START,
@@ -203,6 +213,32 @@ class PlayerViewModel @Inject constructor(
         viewModelScope.launch {
             if (settingsStore.markFirstGameStarted()) {
                 analytics.log(AppEvents.FIRST_GAME_START, mapOf(AppParams.SECONDS_SINCE_INSTALL to settingsStore.secondsSinceInstall()))
+            }
+        }
+    }
+
+    /**
+     * Resume a saved slot without freezing the app. On the GL backend the core's
+     * retro_unserialize waits for its CPU thread to pause, and that thread needs the GL
+     * thread to finish a frame: called on the very first frame (core still booting) the two
+     * can wait on each other, and with the main thread waiting too the app hit an ANR. So:
+     * wait until the game has run [STATE_LOAD_AFTER_FRAMES] frames, and never on main.
+     */
+    private fun maybeApplyPendingState() {
+        val view = stateView ?: return
+        val bytes = pendingStateToLoad ?: return
+        if (frames < STATE_LOAD_AFTER_FRAMES) return
+        pendingStateToLoad = null
+        ioScope.launch {
+            val ok = withTimeoutOrNull(STATE_LOAD_TIMEOUT_MS) {
+                runInterruptible { runCatching { view.unserializeState(bytes) }.getOrDefault(false) }
+            } ?: false
+            if (!ok) crash.breadcrumb("core", "resume state failed")
+            withContext(Dispatchers.Main) {
+                stateView = null
+                activeSince = System.currentTimeMillis()
+                _state.update { it.copy(phase = PlayerPhase.RUNNING) }
+                if (!ok) _events.send(PlayerEvent.Toast(app.letostudio.gameemulator.R.string.toast_load_failed))
             }
         }
     }
@@ -318,21 +354,25 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun saveScreenshot(bitmap: Bitmap?) {
-        bitmap ?: return
+        if (bitmap == null) {
+            // Capture failed: say so instead of doing nothing.
+            viewModelScope.launch { _events.send(PlayerEvent.Toast(app.letostudio.gameemulator.R.string.toast_screenshot_failed)) }
+            return
+        }
         ioScope.launch {
             val ok = runCatching {
                 val values = ContentValues().apply {
-                    put(MediaStore.Images.Media.DISPLAY_NAME, "RetroNova_${System.currentTimeMillis()}.png")
+                    put(MediaStore.Images.Media.DISPLAY_NAME, "Odyssemu_${System.currentTimeMillis()}.png")
                     put(MediaStore.Images.Media.MIME_TYPE, "image/png")
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/RetroNova")
+                        put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Odyssemu")
                     }
                 }
                 val uri = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values) ?: error("insert failed")
                 context.contentResolver.openOutputStream(uri)?.use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
             }.isSuccess
             if (ok) analytics.log(AppEvents.SCREENSHOT_TAKE)
-            _events.send(PlayerEvent.Toast(if (ok) app.letostudio.gameemulator.R.string.toast_screenshot else app.letostudio.gameemulator.R.string.toast_save_failed))
+            _events.send(PlayerEvent.Toast(if (ok) app.letostudio.gameemulator.R.string.toast_screenshot else app.letostudio.gameemulator.R.string.toast_screenshot_failed))
         }
     }
 
@@ -398,6 +438,11 @@ class PlayerViewModel @Inject constructor(
         viewModelScope.launch { settingsStore.setPadOpacity(v) }
     }
 
+    fun setPadSize(v: Float) {
+        analytics.log(AppEvents.SETTING_CHANGE, mapOf(AppParams.KEY to "pad_size", AppParams.VALUE to (v * 100).toInt().toString()))
+        viewModelScope.launch { settingsStore.setPadSize(v) }
+    }
+
     fun setPadHaptics(on: Boolean) {
         analytics.log(AppEvents.SETTING_CHANGE, mapOf(AppParams.KEY to "pad_haptics", AppParams.VALUE to on.toString()))
         viewModelScope.launch { settingsStore.setPadHaptics(on) }
@@ -442,9 +487,15 @@ class PlayerViewModel @Inject constructor(
     }
 
     override fun onCleared() {
+        stateView = null
         runCatching { _state.value.launch?.pfd?.close() }
         super.onCleared()
     }
 
-    private companion object { const val BACKGROUND_SESSION_END_MS = 5 * 60_000L }
+    private companion object {
+        const val BACKGROUND_SESSION_END_MS = 5 * 60_000L
+        /** ~0.5 s of play: the core's CPU thread is in its steady frame loop by then. */
+        const val STATE_LOAD_AFTER_FRAMES = 30L
+        const val STATE_LOAD_TIMEOUT_MS = 8_000L
+    }
 }

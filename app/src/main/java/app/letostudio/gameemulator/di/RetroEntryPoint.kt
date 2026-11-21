@@ -3,6 +3,7 @@ package app.letostudio.gameemulator.di
 import app.letostudio.gameemulator.analytics.Analytics
 import app.letostudio.gameemulator.crash.CrashContext
 import app.letostudio.gameemulator.data.prefs.AppRemoteFlags
+import app.letostudio.gameemulator.monetization.PlacementNativeAds
 import app.letostudio.gameemulator.monetization.ProGate
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -16,4 +17,5 @@ interface RetroEntryPoint {
     fun crashContext(): CrashContext
     fun proGate(): ProGate
     fun remoteFlags(): AppRemoteFlags
+    fun nativeAds(): PlacementNativeAds
 }

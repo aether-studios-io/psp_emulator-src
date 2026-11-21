@@ -1,5 +1,9 @@
 package app.letostudio.gameemulator.ui.player
 
+import app.letostudio.gameemulator.data.prefs.PAD_SIZE_MAX
+import app.letostudio.gameemulator.data.prefs.PAD_SIZE_MIN
+import app.letostudio.gameemulator.data.prefs.PAD_SIZE_STEPS
+import kotlin.math.roundToInt
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -53,6 +57,7 @@ fun PauseMenu(
     onExit: () -> Unit,
     onPadOpacity: (Float) -> Unit,
     onPadHaptics: (Boolean) -> Unit,
+    onPadSize: (Float) -> Unit,
     onFixLag: () -> Unit,
     onResolution: (Int) -> Unit,
     onShowFps: (Boolean) -> Unit,
@@ -69,7 +74,15 @@ fun PauseMenu(
             Text(stringResource(R.string.pause_eyebrow).uppercase(), style = RnTheme.type.overline, color = Color(0xFFBFD8FF))
             Text(game.displayTitle, style = RnTheme.type.headline, color = Color.White)
             Text(
-                state.lastAutoSaveAt?.let { stringResource(R.string.pause_autosaved, Formats.ago(it)) } ?: stringResource(R.string.pause_not_saved),
+                // Latest save of any kind (a manual save updates it too, not only auto-save).
+                state.slots.maxByOrNull { it.savedAt }?.let { last ->
+                    if (last.isAuto) {
+                        stringResource(R.string.pause_autosaved, Formats.ago(last.savedAt))
+                    } else {
+                        stringResource(R.string.pause_saved, Formats.ago(last.savedAt), last.slotIndex)
+                    }
+                } ?: state.lastAutoSaveAt?.let { stringResource(R.string.pause_autosaved, Formats.ago(it)) }
+                    ?: stringResource(R.string.pause_not_saved),
                 style = RnTheme.type.caption,
                 color = Color.White.copy(alpha = 0.8f),
             )
@@ -122,9 +135,12 @@ fun PauseMenu(
         }
         "controls" -> {
             var opacity by remember { mutableFloatStateOf(state.pad.opacity) }
+            var size by remember { mutableFloatStateOf(state.pad.size) }
             RnContentDialog(stringResource(R.string.controls_title), stringResource(R.string.action_ok), { dialog = null }, { dialog = null }) {
                 Text(stringResource(R.string.controls_opacity) + " · " + stringResource(R.string.controls_opacity_value, (opacity * 100).toInt()), style = RnTheme.type.label, color = c.ink)
                 RnSlider(opacity, { opacity = it }, 0.2f..1f, onValueChangeFinished = { onPadOpacity(opacity) })
+                Text(stringResource(R.string.controls_size) + " · " + stringResource(R.string.controls_opacity_value, (size * 100).roundToInt()), style = RnTheme.type.label, color = c.ink)
+                RnSlider(size, { size = it }, PAD_SIZE_MIN..PAD_SIZE_MAX, steps = PAD_SIZE_STEPS, onValueChangeFinished = { onPadSize(size) })
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(stringResource(R.string.controls_haptics), style = RnTheme.type.label, color = c.ink, modifier = Modifier.weight(1f))
                     RnToggle(state.pad.haptics, onPadHaptics)

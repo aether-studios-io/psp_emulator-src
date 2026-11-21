@@ -10,5 +10,5 @@ enum class ThemeSetting { LIGHT, DARK, SYSTEM }
  * reads this one object, so a new field shows up there with no plumbing.
  */
 data class AppSettings(
-    val themeMode: ThemeSetting = ThemeSetting.LIGHT,
+    val themeMode: ThemeSetting = ThemeSetting.DARK,
 )

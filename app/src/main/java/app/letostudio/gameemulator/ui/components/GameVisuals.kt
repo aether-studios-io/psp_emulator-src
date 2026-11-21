@@ -248,6 +248,8 @@ fun RnPlanCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     badge: String? = null,
+    badgeContainer: Color = RnTheme.colors.primaryStrong,
+    badgeContent: Color = RnTheme.colors.onPrimary,
 ) {
     val c = RnTheme.colors
     Box(modifier.fillMaxWidth().padding(top = if (badge != null) 10.dp else 0.dp)) {
@@ -297,8 +299,8 @@ fun RnPlanCard(
             RnBadge(
                 badge,
                 Modifier.align(Alignment.TopEnd).offset(x = (-16).dp, y = (-10).dp),
-                container = c.primaryStrong,
-                content = c.onPrimary,
+                container = badgeContainer,
+                content = badgeContent,
             )
         }
     }

@@ -42,6 +42,10 @@ import app.letostudio.gameemulator.ui.components.RnSlider
 import app.letostudio.gameemulator.ui.components.RnToggle
 import app.letostudio.gameemulator.ui.components.RnTopBar
 import app.letostudio.gameemulator.ui.theme.RnTheme
+import app.letostudio.gameemulator.data.prefs.PAD_SIZE_MAX
+import app.letostudio.gameemulator.data.prefs.PAD_SIZE_MIN
+import app.letostudio.gameemulator.data.prefs.PAD_SIZE_STEPS
+import kotlin.math.roundToInt
 
 /** Controls (F08 opacity + haptics, F09 remap). The drag-and-drop editor (S12) is v1. */
 @Composable
@@ -50,6 +54,7 @@ fun ControlsRoute(onBack: () -> Unit, viewModel: ControlsViewModel = hiltViewMod
     val mapping by viewModel.mapping.collectAsStateWithLifecycle(initialValue = emptyMap())
     val pads by viewModel.pads.collectAsStateWithLifecycle()
     var opacity by remember(pad.opacity) { mutableFloatStateOf(pad.opacity) }
+    var size by remember(pad.size) { mutableFloatStateOf(pad.size) }
     var capturing by remember { mutableStateOf<PadButton?>(null) }
     val focus = remember { FocusRequester() }
     LaunchedEffect(capturing) { if (capturing != null) focus.requestFocus() }
@@ -87,6 +92,20 @@ fun ControlsRoute(onBack: () -> Unit, viewModel: ControlsViewModel = hiltViewMod
                         onValueChange = { opacity = it },
                         valueRange = 0.2f..1f,
                         onValueChangeFinished = { viewModel.setOpacity(opacity); viewModel.logOpacity(opacity) },
+                    )
+                }
+                RnDivider()
+                Column(Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(stringResource(R.string.controls_size), style = RnTheme.type.subtitle, color = RnTheme.colors.ink, modifier = Modifier.weight(1f))
+                        Text(stringResource(R.string.controls_opacity_value, (size * 100).roundToInt()), style = RnTheme.type.label, color = RnTheme.colors.inkMuted)
+                    }
+                    RnSlider(
+                        value = size,
+                        onValueChange = { size = it },
+                        valueRange = PAD_SIZE_MIN..PAD_SIZE_MAX,
+                        steps = PAD_SIZE_STEPS,
+                        onValueChangeFinished = { viewModel.setSize(size) },
                     )
                 }
                 RnDivider()

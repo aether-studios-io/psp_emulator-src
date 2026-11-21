@@ -230,7 +230,7 @@ private fun EmptyLibrary(onAddGames: () -> Unit, onOpenHomebrew: () -> Unit) {
         verticalArrangement = Arrangement.Center,
     ) {
         Box(Modifier.size(160.dp).padding(8.dp)) {
-            GameArt("RetroNova", Modifier.fillMaxSize().then(Modifier))
+            GameArt("Odyssemu", Modifier.fillMaxSize().then(Modifier))
         }
         Spacer(Modifier.height(20.dp))
         Text(stringResource(R.string.library_empty_title), style = RnTheme.type.headline, color = RnTheme.colors.ink)

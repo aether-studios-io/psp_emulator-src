@@ -11,7 +11,7 @@ enum class ThemeMode { Light, Dark, System }
 
 /**
  * The dark/light decision [AppTheme] actually resolved (System included). Use this, never
- * isSystemInDarkTheme(): the app setting overrides the system. RetroNova default: Light.
+ * isSystemInDarkTheme(): the app setting overrides the system. App default: Dark (owner change 2026-11-21).
  */
 val LocalIsDarkTheme = staticCompositionLocalOf { false }
 

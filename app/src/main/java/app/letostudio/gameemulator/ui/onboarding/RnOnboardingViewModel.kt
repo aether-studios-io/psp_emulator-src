@@ -8,6 +8,7 @@ import app.letostudio.gameemulator.analytics.AppParams
 import app.letostudio.gameemulator.analytics.AppScreens
 import app.letostudio.gameemulator.data.prefs.SettingsStore
 import app.letostudio.gameemulator.data.repository.SettingsRepository
+import app.letostudio.gameemulator.monetization.PlanCatalog
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
@@ -18,10 +19,13 @@ class RnOnboardingViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val settingsStore: SettingsStore,
     private val analytics: Analytics,
+    planCatalog: PlanCatalog,
 ) : ViewModel() {
     private var lastLogged = -1
 
     init {
+        // The paywall follows onboarding: fetch its prices while the user reads the pages.
+        planCatalog.prefetch()
         viewModelScope.launch {
             if (settingsStore.markTutorialBegin()) analytics.log(AppEvents.TUTORIAL_BEGIN)
         }

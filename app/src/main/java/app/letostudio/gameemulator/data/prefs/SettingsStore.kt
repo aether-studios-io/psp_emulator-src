@@ -38,7 +38,15 @@ data class EmulatorDefaults(
 data class PadPrefs(
     val opacity: Float = 0.9f,
     val haptics: Boolean = true,
+    /** On-screen control size multiplier, [PAD_SIZE_MIN]..[PAD_SIZE_MAX]. */
+    val size: Float = 1f,
 )
+
+const val PAD_SIZE_MIN = 0.8f
+const val PAD_SIZE_MAX = 1.3f
+
+/** Slider stops between min and max: 5 % steps. */
+const val PAD_SIZE_STEPS = 9
 
 /**
  * RetroNova preferences (tech_stacks.md › data/prefs). Theme and the onboarding flag stay in
@@ -70,6 +78,7 @@ class SettingsStore @Inject constructor(
         val gpuRenderer = stringPreferencesKey("gpu_renderer")
         val padOpacity = floatPreferencesKey("pad_opacity")
         val padHaptics = booleanPreferencesKey("pad_haptics")
+        val padSize = floatPreferencesKey("pad_size")
         val usesGamepad = booleanPreferencesKey("uses_gamepad")
         val debugTaps = intPreferencesKey("debug_unlocked")
     }
@@ -150,10 +159,11 @@ class SettingsStore @Inject constructor(
     }
 
     val padPrefs: Flow<PadPrefs> = store.data.map {
-        PadPrefs(opacity = it[K.padOpacity] ?: 0.9f, haptics = it[K.padHaptics] ?: true)
+        PadPrefs(opacity = it[K.padOpacity] ?: 0.9f, haptics = it[K.padHaptics] ?: true, size = it[K.padSize] ?: 1f)
     }
     suspend fun setPadOpacity(value: Float) = store.edit { it[K.padOpacity] = value.coerceIn(0.2f, 1f) }
     suspend fun setPadHaptics(value: Boolean) = store.edit { it[K.padHaptics] = value }
+    suspend fun setPadSize(value: Float) = store.edit { it[K.padSize] = value.coerceIn(PAD_SIZE_MIN, PAD_SIZE_MAX) }
 
     val usesGamepad: Flow<Boolean> = store.data.map { it[K.usesGamepad] ?: false }
     suspend fun setUsesGamepad() = store.edit { it[K.usesGamepad] = true }

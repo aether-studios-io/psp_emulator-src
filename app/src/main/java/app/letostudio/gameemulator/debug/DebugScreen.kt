@@ -31,7 +31,7 @@ class DebugViewModel @Inject constructor(
 ) : ViewModel() {
     fun testCrash(): Nothing {
         crash.breadcrumb("debug", "test crash")
-        throw RuntimeException("RetroNova test crash (debug screen)")
+        throw RuntimeException("Odyssemu test crash (debug screen)")
     }
 
     /** SIGSEGV to our own process: caught by the Crashlytics NDK signal handler. */
@@ -41,7 +41,7 @@ class DebugViewModel @Inject constructor(
     }
 
     fun testNonFatal() {
-        crashReporter.recordNonFatal("debug", IllegalStateException("RetroNova test non-fatal"), mapOf("source" to "debug_screen"))
+        crashReporter.recordNonFatal("debug", IllegalStateException("Odyssemu test non-fatal"), mapOf("source" to "debug_screen"))
     }
 
     private companion object { const val SIGSEGV = 11 }

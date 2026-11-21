@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- RetroNova: light framework shell (Light is the default theme).
+    <!-- Odyssemu: dark framework shell (Dark is the default theme).
          The real theme is AppTheme (Compose), driven by design_token.json. -->
     <style name="Theme.App" parent="android:Theme.Material.NoActionBar">
-        <item name="android:windowBackground">#F3F5F9</item>
+        <item name="android:windowBackground">#0A0E16</item>
     </style>
 
     <!-- Cold-start splash (MainActivity only). The system splash cannot carry text or a

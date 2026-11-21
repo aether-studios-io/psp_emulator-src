@@ -21,37 +21,50 @@
     <string name="onb1_title">Your games, back in play</string>
     <string name="onb1_body">Play the handheld classics you own on your phone, with smooth graphics and saves that pick up right where you stopped.</string>
     <string name="onb2_title">Import games you own</string>
-    <string name="onb2_body">Pick a folder once. RetroNova finds your ISO, CSO and PBP files, adds covers, and keeps the library tidy.</string>
+    <string name="onb2_body">Pick a folder once. Odyssemu finds your ISO, CSO and PBP files, adds covers, and keeps the library tidy.</string>
     <string name="onb3_title">Play your way</string>
     <string name="onb3_body">Use the on-screen controls, move buttons where your thumbs rest, or connect a Bluetooth or USB gamepad.</string>
     <string name="onb_next">Next</string>
     <string name="onb_get_started">Get started</string>
     <string name="onb1_chip">60 FPS</string>
     <string name="onb1_card_eyebrow">Continue playing</string>
-    <string name="onb1_card_meta">Auto-saved just now</string>
+    <string name="onb1_card_meta">Skybound Odyssey · 12 h</string>
+    <string name="onb1_title_hl">back in play</string>
+    <string name="onb2_title_hl">you own</string>
+    <string name="onb3_title_hl">your way</string>
+    <string name="onb1_shot_cd">Adventure game running in Odyssemu</string>
+    <string name="onb2_shot_cd">Import result with 4 games added</string>
+    <string name="onb2_chip">ISO · CSO · PBP</string>
+    <string name="onb2_card_eyebrow">Scan finished</string>
+    <string name="onb3_shot_cd">Racing game running in Odyssemu</string>
+    <string name="onb3_pad_cd">Wireless gamepad</string>
     <string name="onb2_added">4 games added</string>
     <string name="onb3_pill">Gamepad ready</string>
 
     <!-- S04 Paywall -->
-    <string name="paywall_title">Unlock RetroNova Pro</string>
+    <string name="paywall_title">Unlock Odyssemu Pro</string>
+    <string name="paywall_title_hl">Odyssemu Pro</string>
+    <string name="paywall_covers_cd">Game covers in your library</string>
     <string name="paywall_benefit_no_ads">No ads, ever</string>
     <string name="paywall_benefit_slots">Unlimited save slots for every game</string>
     <string name="paywall_benefit_layouts">Unlimited controller layouts</string>
     <string name="paywall_benefit_shaders">Pro shaders and HD upscaling</string>
     <string name="paywall_benefit_drive">Back up saves to Google Drive</string>
+    <string name="plan_weekly">Weekly</string>
     <string name="plan_yearly">Yearly</string>
     <string name="plan_monthly">Monthly</string>
     <string name="plan_lifetime">Lifetime</string>
-    <string name="plan_yearly_note_trial">3-day free trial, then %1$s/year</string>
-    <string name="plan_yearly_note">Billed once a year</string>
+    <string name="plan_weekly_note_trial">3-day free trial, then %1$s/week</string>
+    <string name="plan_weekly_note">Billed every week</string>
+    <string name="plan_free_trial_badge">3 days free</string>
     <string name="plan_monthly_note">Cancel anytime</string>
     <string name="plan_lifetime_note">Pay once, keep Pro forever</string>
-    <string name="plan_per_year">per year</string>
+    <string name="plan_per_week">per week</string>
     <string name="plan_per_month">per month</string>
     <string name="plan_one_time">one time</string>
     <string name="plan_best_value">Best value</string>
     <string name="paywall_cta_trial">Start free trial</string>
-    <string name="paywall_cta_yearly">Subscribe yearly</string>
+    <string name="paywall_cta_weekly">Subscribe weekly</string>
     <string name="paywall_cta_monthly">Subscribe monthly</string>
     <string name="paywall_cta_lifetime">Buy Lifetime</string>
     <string name="paywall_lifetime_cancel_note">Buying Lifetime doesn\'t cancel your subscription. Cancel it in Google Play so it stops renewing.</string>
@@ -104,11 +117,11 @@
     <string name="import_unreadable">%1$s · can\'t be read</string>
     <string name="import_note">Only games you own. Make your own backups from your discs, or get free homebrew in the Homebrew tab.</string>
     <string name="import_done">Done</string>
-    <string name="import_first_hint">Pick the folder where you keep your game files. RetroNova only reads the folder you choose.</string>
-    <string name="import_fail_permission">RetroNova can\'t read that folder any more. Choose it again to continue.</string>
+    <string name="import_first_hint">Pick the folder where you keep your game files. Odyssemu only reads the folder you choose.</string>
+    <string name="import_fail_permission">Odyssemu can\'t read that folder any more. Choose it again to continue.</string>
     <string name="import_fail_io">Something went wrong while scanning. Try again.</string>
     <string name="import_file_added">Added %1$s</string>
-    <string name="import_file_failed">That file isn\'t a game RetroNova can open.</string>
+    <string name="import_file_failed">That file isn\'t a game Odyssemu can open.</string>
 
     <!-- S07 Game detail -->
     <string name="game_resume">Resume</string>
@@ -167,15 +180,15 @@
     <string name="homebrew_caption">Titles listed here are free and carry an open license.</string>
     <string name="homebrew_soon">The curated homebrew list arrives in a future update.</string>
     <string name="guide_title">Back up games you own</string>
-    <string name="guide_intro">RetroNova plays copies of games you already own. Here is how to make your own backup files. RetroNova never downloads games for you.</string>
+    <string name="guide_intro">Odyssemu plays copies of games you already own. Here is how to make your own backup files. Odyssemu never downloads games for you.</string>
     <string name="guide_step1_title">1. Use your own console and discs</string>
     <string name="guide_step1_body">Only back up discs you bought. Sharing or downloading copies of games you don\'t own is illegal in most countries.</string>
     <string name="guide_step2_title">2. Create an image file</string>
     <string name="guide_step2_body">Use your console\'s homebrew tools to dump the disc to an ISO file. CSO is a compressed ISO and works too.</string>
     <string name="guide_step3_title">3. Copy it to your phone</string>
     <string name="guide_step3_body">Connect your phone to a computer and copy the ISO, CSO or PBP files into one folder, for example Games.</string>
-    <string name="guide_step4_title">4. Pick the folder in RetroNova</string>
-    <string name="guide_step4_body">Open Library › Add games › Choose folder. RetroNova finds the games and adds covers automatically.</string>
+    <string name="guide_step4_title">4. Pick the folder in Odyssemu</string>
+    <string name="guide_step4_body">Open Library › Add games › Choose folder. Odyssemu finds the games and adds covers automatically.</string>
 
     <!-- S09 Player / S10 Pause -->
     <string name="player_error_title">This game can\'t start</string>
@@ -184,6 +197,7 @@
     <string name="player_loading">Starting…</string>
     <string name="pause_eyebrow">Paused</string>
     <string name="pause_autosaved">Auto-saved %1$s · Slot A</string>
+    <string name="pause_saved">Saved %1$s · Slot %2$d</string>
     <string name="pause_not_saved">Not saved yet</string>
     <string name="pause_resume">Resume</string>
     <string name="pause_save">Save state</string>
@@ -198,7 +212,8 @@
     <string name="pause_exit_caption">Exit auto-saves your progress.</string>
     <string name="toast_saved">Saved</string>
     <string name="toast_loaded">Loaded</string>
-    <string name="toast_screenshot">Screenshot saved to Pictures/RetroNova</string>
+    <string name="toast_screenshot">Screenshot saved to Pictures/Odyssemu</string>
+    <string name="toast_screenshot_failed">Couldn\'t take a screenshot. Try again.</string>
     <string name="toast_save_failed">Couldn\'t save. Free some space and try again.</string>
     <string name="toast_load_failed">That save can\'t be loaded.</string>
     <string name="toast_slots_full">All free slots are used. Watch an ad on the game page or go Pro.</string>
@@ -214,7 +229,6 @@
     <string name="settings_plan_premium_named">Premium · %1$s</string>
     <string name="settings_upgrade">Upgrade</string>
     <string name="settings_switch_monthly">Switch to Monthly</string>
-    <string name="settings_switch_yearly">Switch to Yearly</string>
     <string name="settings_manage_sub">Manage subscription</string>
     <string name="settings_manage_sub_sub">Opens Google Play</string>
     <string name="settings_group_games">Games</string>
@@ -230,7 +244,7 @@
     <string name="theme_dark">Dark</string>
     <string name="theme_system">System</string>
     <string name="settings_group_support">Support</string>
-    <string name="settings_rate">Rate RetroNova</string>
+    <string name="settings_rate">Rate Odyssemu</string>
     <string name="settings_contact">Contact us</string>
     <string name="settings_privacy">Privacy policy</string>
     <string name="settings_terms">Terms of use</string>
@@ -238,8 +252,8 @@
     <string name="settings_oss">Open-source licenses</string>
     <string name="settings_oss_sub">Emulation core: GPL-2.0+ · source code</string>
     <string name="settings_version">Version</string>
-    <string name="settings_contact_subject">[RetroNova] Support request</string>
-    <string name="settings_contact_body">\n\n—\nApp: RetroNova %1$s\nDevice: %2$s\nAndroid: %3$s\nPlan: %4$s</string>
+    <string name="settings_contact_subject">[Odyssemu] Support request</string>
+    <string name="settings_contact_body">\n\n—\nApp: Odyssemu %1$s\nDevice: %2$s\nAndroid: %3$s\nPlan: %4$s</string>
     <string name="settings_no_email_app">No email app found. Write to us at %1$s</string>
     <string name="settings_no_browser">No browser found to open this page.</string>
     <string name="settings_debug_unlocked">Debug tools unlocked</string>
@@ -248,10 +262,11 @@
     <string name="controls_title">Controls</string>
     <string name="controls_opacity">On-screen controls opacity</string>
     <string name="controls_opacity_value">%1$d%%</string>
+    <string name="controls_size">On-screen controls size</string>
     <string name="controls_haptics">Haptic feedback</string>
     <string name="controls_haptics_sub">Vibrate lightly on every button tap</string>
     <string name="controls_gamepad">Gamepad</string>
-    <string name="controls_gamepad_none">Connect a Bluetooth or USB gamepad. RetroNova detects it automatically.</string>
+    <string name="controls_gamepad_none">Connect a Bluetooth or USB gamepad. Odyssemu detects it automatically.</string>
     <string name="controls_remap">Button mapping</string>
     <string name="controls_remap_sub">Tap a button, then press the gamepad button you want</string>
     <string name="controls_remap_wait">Press a gamepad button for %1$s…</string>
@@ -297,9 +312,9 @@
 
     <!-- Open-source licenses -->
     <string name="oss_title">Open-source licenses</string>
-    <string name="oss_intro">RetroNova is free software under the GNU General Public License v3.0. It is built on these open-source projects.</string>
+    <string name="oss_intro">Odyssemu is free software under the GNU General Public License v3.0. It is built on these open-source projects.</string>
     <string name="oss_source">Source code</string>
-    <string name="oss_source_sub">Complete source for this version of RetroNova</string>
+    <string name="oss_source_sub">Complete source for this version of Odyssemu</string>
     <string name="oss_credit_core">Emulation by the PPSSPP project (GPL-2.0+)</string>
     <string name="oss_full_text">Full license texts</string>
 

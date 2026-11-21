@@ -22,6 +22,7 @@ import app.letostudio.gameemulator.monetization.ProPlan
 import app.letostudio.gameemulator.ui.library.LibraryFilter
 import app.letostudio.gameemulator.ui.library.LibraryViewModel
 import app.letostudio.gameemulator.ui.paywall.RnPaywallViewModel
+import app.letostudio.gameemulator.ui.player.PadGeometry
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -47,6 +48,13 @@ class SmartSetupTest {
         assertEquals(DeviceTier.HIGH, SmartSetup.tierOf(flagship))
         assertEquals(DeviceTier.MID, SmartSetup.tierOf(mid))
         assertEquals(DeviceTier.LOW, SmartSetup.tierOf(low))
+    }
+
+    @Test fun `mali g7x is mid and gets 1x`() {
+        val pixel6a = DeviceSignals(8, 5_700, "Mali-G78", 150_000_000)
+        assertEquals(DeviceTier.MID, SmartSetup.tierOf(pixel6a))
+        assertEquals(1, SmartSetup.defaultsFor(DeviceTier.MID).resolution)
+        assertEquals(DeviceTier.HIGH, SmartSetup.tierOf(DeviceSignals(8, 12_000, "Mali-G715-Immortalis MC11", 150_000_000)))
     }
 
     @Test fun `fix lag lowers one step per tap then stops`() {
@@ -89,23 +97,26 @@ class ProGateTest {
     @Test fun `plan comes from the product id`() {
         fun sub(id: String) = PremiumStatus(true, PremiumSource.SUBSCRIPTION, id)
         assertEquals(ProPlan.MONTHLY, ProGate.derive(sub(BillingConfig.PRO_MONTHLY)).plan)
+        assertEquals(ProPlan.WEEKLY, ProGate.derive(sub(BillingConfig.PRO_WEEKLY)).plan)
+        // Retired plan: existing buyers keep Pro and their plan name.
         assertEquals(ProPlan.YEARLY, ProGate.derive(sub(BillingConfig.PRO_YEARLY)).plan)
+        assertTrue(BillingConfig.isSubscription(BillingConfig.PRO_YEARLY))
         assertEquals(ProPlan.SUBSCRIPTION, ProGate.derive(sub("other_sub")).plan)
         assertTrue(ProGate.derive(sub("other_sub")).isPro)
         assertEquals(BillingConfig.PRO_MONTHLY, ProGate.productOf(ProPlan.MONTHLY))
         assertEquals(null, ProGate.productOf(ProPlan.LIFETIME))
     }
 
-    @Test fun `plan catalog orders yearly monthly lifetime and drops unknown products`() {
+    @Test fun `plan catalog orders weekly monthly lifetime and drops unknown products`() {
         fun p(id: String) = app.letostudio.gameemulator.domain.model.SubscriptionPlan(
             productId = id, basePlanId = null, offerToken = null, name = id,
             billingPeriod = app.letostudio.gameemulator.billing.model.BillingPeriod.MONTHLY,
             formattedPrice = "$1", priceMicros = 1, currencyCode = "USD",
         )
         val kinds = app.letostudio.gameemulator.monetization.PlanCatalog.options(
-            listOf(p(BillingConfig.PRO_LIFETIME), p("x"), p(BillingConfig.PRO_MONTHLY), p(BillingConfig.PRO_YEARLY)),
+            listOf(p(BillingConfig.PRO_LIFETIME), p("x"), p(BillingConfig.PRO_MONTHLY), p(BillingConfig.PRO_YEARLY), p(BillingConfig.PRO_WEEKLY)),
         ).map { it.kind }
-        assertEquals(listOf(PlanKind.YEARLY, PlanKind.MONTHLY, PlanKind.LIFETIME), kinds)
+        assertEquals(listOf(PlanKind.WEEKLY, PlanKind.MONTHLY, PlanKind.LIFETIME), kinds)
     }
 
     @Test fun `cancel anytime url`() {
@@ -161,6 +172,38 @@ class KeyMapperTest {
         assertEquals(100, KeyMapper.translate(m, 100))
         assertEquals(96, KeyMapper.physicalFor(m, PadButton.B))
         assertEquals(emptyMap<Int, Int>(), KeyMapper.decode("garbage"))
+    }
+
+    @Test fun `face buttons swap to RetroPad positions`() {
+        assertEquals(PadButton.B.keyCode, KeyMapper.toRetroPad(PadButton.A.keyCode))
+        assertEquals(PadButton.A.keyCode, KeyMapper.toRetroPad(PadButton.B.keyCode))
+        assertEquals(PadButton.Y.keyCode, KeyMapper.toRetroPad(PadButton.X.keyCode))
+        assertEquals(PadButton.X.keyCode, KeyMapper.toRetroPad(PadButton.Y.keyCode))
+        assertEquals(PadButton.START.keyCode, KeyMapper.toRetroPad(PadButton.START.keyCode))
+    }
+}
+
+class PadGeometryTest {
+    private val up = android.view.KeyEvent.KEYCODE_DPAD_UP
+    private val down = android.view.KeyEvent.KEYCODE_DPAD_DOWN
+    private val left = android.view.KeyEvent.KEYCODE_DPAD_LEFT
+    private val right = android.view.KeyEvent.KEYCODE_DPAD_RIGHT
+
+    @Test fun `dpad is 8-way with a centre dead zone`() {
+        assertEquals(emptySet<Int>(), PadGeometry.dpad(0.5f, 0.5f))
+        assertEquals(setOf(up), PadGeometry.dpad(0.5f, 0.05f))
+        assertEquals(setOf(right), PadGeometry.dpad(0.95f, 0.55f))
+        assertEquals(setOf(up, right), PadGeometry.dpad(0.9f, 0.1f))
+        assertEquals(setOf(down, left), PadGeometry.dpad(0.1f, 0.9f))
+    }
+
+    @Test fun `face cluster picks the nearest button, gaps included`() {
+        assertEquals(PadButton.Y.keyCode, PadGeometry.face(0.5f, 0.1f))
+        assertEquals(PadButton.A.keyCode, PadGeometry.face(0.5f, 0.95f))
+        assertEquals(PadButton.X.keyCode, PadGeometry.face(0.05f, 0.5f))
+        assertEquals(PadButton.B.keyCode, PadGeometry.face(0.9f, 0.5f))
+        // gap between A (bottom) and B (right), nearer to B
+        assertEquals(PadButton.B.keyCode, PadGeometry.face(0.85f, 0.75f))
     }
 }
 

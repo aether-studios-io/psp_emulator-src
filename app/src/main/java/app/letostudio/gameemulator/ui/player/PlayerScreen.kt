@@ -52,6 +52,8 @@ import app.letostudio.gameemulator.ui.components.RnBadge
 import app.letostudio.gameemulator.ui.components.RnDialog
 import app.letostudio.gameemulator.ui.theme.RnThemeProvider
 import com.swordfish.libretrodroid.GLRetroView
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -97,8 +99,25 @@ fun PlayerRoute(onExit: () -> Unit, viewModel: PlayerViewModel = hiltViewModel()
         if (view.width <= 0 || view.height <= 0) return done(null)
         val bmp = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
         runCatching {
-            PixelCopy.request(view, bmp, { result -> done(if (result == PixelCopy.SUCCESS) bmp else null) }, Handler(Looper.getMainLooper()))
+            PixelCopy.request(view, bmp, { result ->
+                if (result != PixelCopy.SUCCESS) android.util.Log.w("Player", "screenshot PixelCopy failed: $result")
+                done(if (result == PixelCopy.SUCCESS) bmp else null)
+            }, Handler(Looper.getMainLooper()))
         }.onFailure { done(null) }
+    }
+
+    // Last frame grabbed just before pausing. Pausing calls GLRetroView.onPause(), which drops
+    // the GL surface, so PixelCopy has nothing to read while the pause menu is up
+    // (ERROR_SOURCE_NO_DATA): Screenshot and the save thumbnail use this frame instead.
+    var pausedFrame by remember { mutableStateOf<Bitmap?>(null) }
+
+    fun pauseGame() {
+        val v = retroView
+        if (v == null || state.phase != PlayerPhase.RUNNING) return viewModel.pause()
+        captureFull(v) { frame ->
+            pausedFrame = frame
+            viewModel.pause()
+        }
     }
 
     /** Auto-save then leave (with the I1 interstitial check once the save is on disk). */
@@ -109,8 +128,11 @@ fun PlayerRoute(onExit: () -> Unit, viewModel: PlayerViewModel = hiltViewModel()
             return
         }
         capture(v) { thumb ->
-            val bytes = runCatching { v.serializeState() }.getOrNull()
-            viewModel.autoSave(bytes, thumb) { viewModel.onExitSaved(reason) }
+            // serializeState waits on the emulation thread: keep it off main (ANR risk).
+            scope.launch {
+                val bytes = withContext(Dispatchers.IO) { runCatching { v.serializeState() }.getOrNull() }
+                viewModel.autoSave(bytes, thumb) { viewModel.onExitSaved(reason) }
+            }
         }
     }
 
@@ -142,10 +164,10 @@ fun PlayerRoute(onExit: () -> Unit, viewModel: PlayerViewModel = hiltViewModel()
                 if (!GamepadManager.isGamepadEvent(event)) return false
                 event.device?.let { viewModel.onGamepadInput(it.vendorId, it.productId) }
                 if (event.keyCode == KeyEvent.KEYCODE_BUTTON_MODE) {
-                    if (event.action == KeyEvent.ACTION_UP) viewModel.pause()
+                    if (event.action == KeyEvent.ACTION_UP) pauseGame()
                     return true
                 }
-                v.sendKeyEvent(event.action, KeyMapper.translate(state.mapping, event.keyCode), 0)
+                v.sendKeyEvent(event.action, KeyMapper.toRetroPad(KeyMapper.translate(state.mapping, event.keyCode)), 0)
                 return true
             }
 
@@ -185,7 +207,7 @@ fun PlayerRoute(onExit: () -> Unit, viewModel: PlayerViewModel = hiltViewModel()
 
     BackHandler {
         when (state.phase) {
-            PlayerPhase.RUNNING -> viewModel.pause()
+            PlayerPhase.RUNNING -> pauseGame()
             PlayerPhase.PAUSED -> viewModel.resume()
             PlayerPhase.ERROR -> onExit()
             else -> Unit
@@ -232,6 +254,13 @@ fun PlayerRoute(onExit: () -> Unit, viewModel: PlayerViewModel = hiltViewModel()
                         onRelease = { v ->
                             lifecycleOwner.lifecycle.removeObserver(v)
                             if (retroView === v) retroView = null
+                            // Removing the observer means GLRetroView never sees ON_DESTROY, so the
+                            // core would stay loaded with PPSSPP's emu thread alive. The next
+                            // GLRetroView then dlcloses it from LibretroDroid.create and the
+                            // joinable std::thread's destructor aborts the process. Stop the GL
+                            // thread, then unload + deinit the core ourselves.
+                            runCatching { v.onPause() }
+                            runCatching { v.onDestroy() }
                         },
                     )
                 }
@@ -244,35 +273,50 @@ fun PlayerRoute(onExit: () -> Unit, viewModel: PlayerViewModel = hiltViewModel()
             if (state.phase == PlayerPhase.RUNNING && state.overlayVisible) {
                 VirtualPad(
                     opacity = state.pad.opacity,
+                    scale = state.pad.size,
                     haptics = state.pad.haptics,
-                    onKey = { code, down -> retroView?.sendKeyEvent(if (down) KeyEvent.ACTION_DOWN else KeyEvent.ACTION_UP, code, 0) },
+                    onKey = { code, down -> retroView?.sendKeyEvent(if (down) KeyEvent.ACTION_DOWN else KeyEvent.ACTION_UP, KeyMapper.toRetroPad(code), 0) },
                     onStick = { x, y -> retroView?.sendMotionEvent(GLRetroView.MOTION_SOURCE_ANALOG_LEFT, x, y, 0) },
-                    onPause = viewModel::pause,
+                    onPause = ::pauseGame,
                     pauseDescription = stringResource(R.string.cd_pause),
                 )
             }
             if (state.settings.showFps && state.phase == PlayerPhase.RUNNING) {
-                RnBadge("${state.fps} FPS", Modifier.align(Alignment.TopStart).statusBarsPadding().padding(start = 120.dp, top = 18.dp))
+                RnBadge("${state.fps} FPS", Modifier.align(Alignment.TopStart).statusBarsPadding().padding(start = 28.dp + 92.dp * state.pad.size, top = 18.dp))
             }
 
             if (state.phase == PlayerPhase.PAUSED && game != null) {
                 PauseMenu(
                     state = state,
                     onResume = viewModel::resume,
-                    onSave = { retroView?.let { v -> capture(v) { thumb -> viewModel.saveManual(runCatching { v.serializeState() }.getOrNull(), thumb) } } },
+                    onSave = {
+                        retroView?.let { v ->
+                            scope.launch {
+                                val thumb = pausedFrame?.scaleThumb()
+                                val bytes = withContext(Dispatchers.IO) { runCatching { v.serializeState() }.getOrNull() }
+                                viewModel.saveManual(bytes, thumb)
+                            }
+                        }
+                    },
                     onLoad = { slot ->
                         scope.launch {
                             val bytes = viewModel.readSlot(slot)
-                            val ok = bytes != null && retroView?.let { v -> runCatching { v.unserializeState(bytes) }.getOrDefault(false) } == true
+                            val v = retroView
+                            val ok = bytes != null && v != null &&
+                                withContext(Dispatchers.IO) { runCatching { v.unserializeState(bytes) }.getOrDefault(false) }
                             snackbar.showSnackbar(res.getString(if (ok) R.string.toast_loaded else R.string.toast_load_failed))
                             if (ok) viewModel.resume()
                         }
                     },
                     onSpeed = viewModel::setSpeed,
-                    onScreenshot = { retroView?.let { v -> captureFull(v, viewModel::saveScreenshot) } },
+                    onScreenshot = {
+                        val frame = pausedFrame
+                        if (frame != null) viewModel.saveScreenshot(frame) else retroView?.let { v -> captureFull(v, viewModel::saveScreenshot) }
+                    },
                     onExit = { exitGame("menu") },
                     onPadOpacity = viewModel::setPadOpacity,
                     onPadHaptics = viewModel::setPadHaptics,
+                    onPadSize = viewModel::setPadSize,
                     onFixLag = { viewModel.fixLag { vars -> retroView?.updateVariables(*vars) } },
                     onResolution = { r -> viewModel.setResolution(r) { vars -> retroView?.updateVariables(*vars) } },
                     onShowFps = viewModel::setShowFps,

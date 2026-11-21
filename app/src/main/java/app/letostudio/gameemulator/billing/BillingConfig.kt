@@ -29,21 +29,26 @@ import java.util.concurrent.ConcurrentHashMap
  */
 object BillingConfig {
 
-    // RetroNova catalogue (features.md > Pricing, owner change 2026-11-12): one product per
-    // plan — two subscriptions (`..._yearly` base plan `yearly` + offer `trial-3d`;
-    // `..._monthly` base plan `monthly`) and one non-consumable lifetime product.
+    // Catalogue (owner change 2026-11-21, D-018): one product per plan — two subscriptions
+    // (`..._weekly` base plan `weekly` + offer `trial-3d`; `..._monthly` base plan
+    // `monthly`) and one non-consumable lifetime product. `..._yearly` is no longer sold but
+    // stays recognised so anyone who bought it keeps Pro.
+    const val PRO_WEEKLY = "gameemulator_pro_weekly"
     const val PRO_YEARLY = "gameemulator_pro_yearly"
     const val PRO_MONTHLY = "gameemulator_pro_monthly"
     const val PRO_LIFETIME = "gameemulator_pro_lifetime"
-    const val BASE_PLAN_YEARLY = "yearly"
+    const val BASE_PLAN_WEEKLY = "weekly"
     const val BASE_PLAN_MONTHLY = "monthly"
     const val OFFER_TRIAL = "trial-3d"
 
     /** The product carrying the free-trial offer (read by StoreConfigParser's default). */
-    const val PRODUCT_WEEKLY_TRIAL = PRO_YEARLY
+    const val PRODUCT_WEEKLY_TRIAL = PRO_WEEKLY
 
     /** All subscription product IDs to query, in paywall display order. */
-    val SUBS_PRODUCT_IDS: List<String> = listOf(PRO_YEARLY, PRO_MONTHLY)
+    val SUBS_PRODUCT_IDS: List<String> = listOf(PRO_WEEKLY, PRO_MONTHLY)
+
+    /** Subscriptions no longer sold whose existing purchases still grant Pro. */
+    val LEGACY_SUBS_PRODUCT_IDS: List<String> = listOf(PRO_YEARLY)
 
     /** All one-time (INAPP) product IDs to query. */
     val INAPP_PRODUCT_IDS: List<String> = listOf(PRO_LIFETIME)
@@ -52,10 +57,11 @@ object BillingConfig {
     val CONSUMABLE_PRODUCT_IDS: Set<String> = emptySet()
 
     /** Product highlighted with the "Best value" badge. */
-    const val BEST_VALUE_PRODUCT_ID = PRO_YEARLY
+    const val BEST_VALUE_PRODUCT_ID = PRO_LIFETIME
 
     /** Billing cadence per product. */
     fun periodOf(productId: String): BillingPeriod? = when (productId) {
+        PRO_WEEKLY -> BillingPeriod.WEEKLY
         PRO_YEARLY -> BillingPeriod.YEARLY
         PRO_MONTHLY -> BillingPeriod.MONTHLY
         PRO_LIFETIME -> BillingPeriod.LIFETIME
@@ -99,9 +105,9 @@ object BillingConfig {
     private val runtimeSubscriptionIds: MutableSet<String> = ConcurrentHashMap.newKeySet()
 
     fun recordSubscription(productId: String) {
-        if (productId !in SUBS_PRODUCT_IDS) runtimeSubscriptionIds += productId
+        if (productId !in SUBS_PRODUCT_IDS && productId !in LEGACY_SUBS_PRODUCT_IDS) runtimeSubscriptionIds += productId
     }
 
     fun isSubscription(productId: String): Boolean =
-        productId in SUBS_PRODUCT_IDS || productId in runtimeSubscriptionIds
+        productId in SUBS_PRODUCT_IDS || productId in LEGACY_SUBS_PRODUCT_IDS || productId in runtimeSubscriptionIds
 }

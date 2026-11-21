@@ -120,7 +120,9 @@ class SmartSetup @Inject constructor(
         fun tierOf(s: DeviceSignals): DeviceTier {
             val gpu = s.gpuRenderer.lowercase()
             val weakGpu = Regex("""adreno \(tm\) (3\d\d|4\d\d|50\d)|mali-(t|4|g5[12])|powervr""").containsMatchIn(gpu)
-            val strongGpu = Regex("""adreno \(tm\) (6[4-9]\d|7\d\d|8\d\d)|mali-g(7[1-9]|71\d|72\d|9\d\d)|immortalis|xclipse""").containsMatchIn(gpu)
+            // Mali-G7x (G71…G78) is left out: on the GL backend a Pixel 6a (G78) holds only
+            // 40–55 fps at 2× in heavy scenes, which makes the audio crackle.
+            val strongGpu = Regex("""adreno \(tm\) (6[4-9]\d|7\d\d|8\d\d)|mali-g(71\d|72\d)|immortalis|xclipse""").containsMatchIn(gpu)
             var points = 0
             points += when { s.cores >= 8 -> 2; s.cores >= 6 -> 1; else -> 0 }
             points += when { s.ramMb >= 7_000 -> 2; s.ramMb >= 3_500 -> 1; else -> 0 }
@@ -136,7 +138,7 @@ class SmartSetup @Inject constructor(
 
         fun defaultsFor(tier: DeviceTier): EmulatorDefaults = when (tier) {
             DeviceTier.HIGH -> EmulatorDefaults(resolution = 2, frameSkip = 0, effectsOn = true)
-            DeviceTier.MID -> EmulatorDefaults(resolution = 2, frameSkip = 0, effectsOn = true)
+            DeviceTier.MID -> EmulatorDefaults(resolution = 1, frameSkip = 0, effectsOn = true)
             DeviceTier.LOW -> EmulatorDefaults(resolution = 1, frameSkip = 0, effectsOn = true)
         }
 
